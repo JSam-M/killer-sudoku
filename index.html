@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Killer Sudoku</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; }
+
+    #app { max-width: 480px; margin: 0 auto; padding: 1rem 1rem 2rem; }
+
+    #hdr { text-align: center; margin-bottom: .25rem; }
+    #hdr h1 { font-size: 24px; font-weight: 600; letter-spacing: .06em; }
+    #hdr p { font-size: 12px; color: #888; margin-top: 2px; }
+
+    /* Status bars */
+    .status-bar { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; color: #888; margin-bottom: .4rem; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+    .dot.on { background: #1D9E75; }
+    .dot.amber { background: #BA7517; }
+
+    /* Auth section */
+    #auth-section { margin-bottom: .75rem; }
+    #auth-prompt {
+      background: #fff; border: 0.5px solid #e0e0d8; border-radius: 10px;
+      overflow: hidden; transition: all .2s;
+    }
+    #auth-prompt-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; cursor: pointer;
+    }
+    #auth-prompt-header:active { background: #f8f8f4; }
+    .auth-left { display: flex; align-items: center; gap: 8px; }
+    .sync-icon { width: 16px; height: 16px; color: #185FA5; }
+    #auth-prompt-title { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+    #auth-prompt-sub { font-size: 11px; color: #888; }
+    #auth-chevron { font-size: 12px; color: #aaa; transition: transform .2s; }
+    #auth-chevron.open { transform: rotate(180deg); }
+    #auth-panel { display: none; padding: 0 14px 14px; border-top: 0.5px solid #f0f0e8; }
+    #auth-panel.open { display: block; }
+    #auth-email-input {
+      width: 100%; padding: 9px 12px; font-size: 13px; margin: 10px 0 8px;
+      border: 0.5px solid #ddd; border-radius: 8px; background: #f8f8f4;
+      color: #1a1a1a; outline: none;
+    }
+    #auth-email-input:focus { border-color: #185FA5; background: #fff; }
+    #auth-send-btn {
+      width: 100%; padding: 10px; font-size: 13px; font-weight: 500;
+      background: #1a1a1a; color: #fff; border: none; border-radius: 8px;
+      cursor: pointer; margin-bottom: 8px;
+    }
+    #auth-send-btn:active { opacity: .8; }
+    #auth-guest-btn {
+      width: 100%; padding: 8px; font-size: 12px; color: #888;
+      background: transparent; border: 0.5px solid #ddd; border-radius: 8px; cursor: pointer;
+    }
+    #auth-msg { font-size: 12px; color: #1D9E75; text-align: center; margin-top: 8px; min-height: 16px; }
+    #auth-msg.err { color: #A32D2D; }
+
+    #auth-signed-in {
+      display: none; background: #fff; border: 0.5px solid #e0e0d8;
+      border-radius: 10px; padding: 10px 14px;
+      flex-direction: row; align-items: center; justify-content: space-between;
+    }
+    .user-badge {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #E6F1FB; color: #185FA5;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600;
+    }
+    .user-info-label { font-size: 11px; color: #888; }
+    .user-info-email { font-size: 12px; font-weight: 500; color: #1a1a1a; }
+    #signout-btn {
+      font-size: 11px; color: #888; background: transparent;
+      border: 0.5px solid #ddd; border-radius: 6px; padding: 5px 10px; cursor: pointer;
+    }
+
+    /* Stats bar */
+    #stats { display: flex; justify-content: space-around; padding: 10px 16px; background: #fff; border-radius: 12px; border: 0.5px solid #e0e0d8; margin-bottom: .75rem; }
+    .stat { text-align: center; }
+    .stl { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .05em; }
+    .stv { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+    .stb { font-size: 10px; color: #185FA5; min-height: 13px; margin-top: 1px; }
+
+    /* Difficulty */
+    #diff { display: flex; gap: 5px; margin-bottom: .5rem; }
+    .db { flex: 1; padding: 8px 4px; font-size: 12px; border: 0.5px solid #ddd; border-radius: 8px; background: transparent; color: #888; cursor: pointer; transition: all .1s; -webkit-tap-highlight-color: transparent; }
+    .db:hover { background: #f0f0ea; }
+    .db.on { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .db.don { background: #185FA5; color: #fff; border-color: #185FA5; }
+
+    #genmsg { text-align: center; font-size: 12px; color: #aaa; min-height: 20px; margin-bottom: .5rem; }
+
+    /* Grid */
+    #game { display: flex; justify-content: center; margin-bottom: .75rem; }
+    #gw { position: relative; }
+    #grid { display: grid; grid-template-columns: repeat(9, 1fr); border: 2.5px solid #333; border-radius: 3px; overflow: hidden; touch-action: manipulation; }
+    .cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: clamp(14px, 4vw, 20px); font-weight: 400; color: #1a1a1a; cursor: pointer; user-select: none; background: #fff; border-right: 0.5px solid #ddd; border-bottom: 0.5px solid #ddd; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background .1s; }
+    .cell:nth-child(3n):not(:nth-child(9n)) { border-right: 2px solid #333; }
+    .cell:nth-child(9n) { border-right: none; }
+    .cell[data-r="2"], .cell[data-r="5"] { border-bottom: 2px solid #333; }
+    .cell[data-r="8"] { border-bottom: none; }
+    .cell.sel { background: #B5D4F4 !important; }
+    .cell.chi { background: #E6F1FB; }
+    .cell.hi { background: #f5f5f0; }
+    .cell.err { color: #A32D2D; }
+    .ng { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); width: 100%; height: 100%; }
+    .nn { display: flex; align-items: center; justify-content: center; font-size: clamp(5px, 1.2vw, 8px); color: #aaa; }
+    #csvg { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+    /* Numpad */
+    #np { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin: 0 auto .75rem; }
+    .nb { padding: 10px 0; font-size: clamp(14px, 4vw, 18px); border: 0.5px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    .nb:active { background: #f0f0ea; transform: scale(.95); }
+
+    /* Actions */
+    #acts { display: flex; gap: 6px; margin-bottom: .75rem; }
+    .ab { flex: 1; padding: 10px 4px; font-size: 12px; border: 0.5px solid #ddd; border-radius: 8px; background: #fff; color: #888; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .ab:active { background: #f0f0ea; }
+    .ab.on { background: #f0f0ea; color: #1a1a1a; border-color: #ccc; }
+
+    /* Win screen */
+    #win { display: none; padding: 1.5rem; background: #fff; border-radius: 12px; border: 0.5px solid #e0e0d8; text-align: center; }
+    #win h2 { font-size: 18px; font-weight: 600; margin-bottom: .75rem; }
+    .wpct { font-size: 52px; font-weight: 600; line-height: 1; }
+    .wpct.real { color: #1D9E75; }
+    .wpct.sim { color: #185FA5; }
+    .wpl { font-size: 12px; color: #888; margin: 4px 0 1rem; }
+    .wdivider { border: none; border-top: 0.5px solid #e8e8e0; margin: .75rem 0 .6rem; }
+    .wtitle { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .6rem; }
+    .wrow3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 7px; }
+    .wc { background: #f8f8f4; border-radius: 8px; border: 0.5px solid #e8e8e0; padding: 8px 4px; }
+    .wcl { font-size: 9px; color: #aaa; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+    .wcv { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+    .wcv.good { color: #1D9E75; }
+    .wcv.bad { color: #D85A30; }
+    .wcv.gold { color: #BA7517; }
+    .wbottom { display: grid; grid-template-columns: 1fr 0.5px 1fr 0.5px 1fr; background: #f8f8f4; border-radius: 8px; border: 0.5px solid #e8e8e0; overflow: hidden; margin-bottom: .75rem; }
+    .wbc { padding: 10px 4px; text-align: center; }
+    .wbsep { background: #e8e8e0; }
+    .wbtn { width: 160px; padding: 10px; font-size: 13px; font-weight: 500; border: none; border-radius: 8px; background: #1a1a1a; color: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="hdr">
+    <h1>Killer Sudoku</h1>
+    <p>Cages must sum to their target — no repeats within a cage</p>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="conn-dot"></span>
+    <span id="conn-label">Connecting…</span>
+  </div>
+
+  <!-- Auth section -->
+  <div id="auth-section">
+    <div id="auth-prompt">
+      <div id="auth-prompt-header" onclick="toggleAuthPanel()">
+        <div class="auth-left">
+          <svg class="sync-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 8A6 6 0 1 1 8 2"/><polyline points="14,2 14,6 10,6"/>
+          </svg>
+          <div>
+            <div id="auth-prompt-title">Sign in to sync stats across devices</div>
+            <div id="auth-prompt-sub">Free · works on any device</div>
+          </div>
+        </div>
+        <span id="auth-chevron">▾</span>
+      </div>
+      <div id="auth-panel">
+        <input id="auth-email-input" type="email" placeholder="your@email.com" />
+        <button id="auth-send-btn" onclick="sendMagicLink()">Send magic link</button>
+        <button id="auth-guest-btn" onclick="closeAuthPanel()">Continue as guest</button>
+        <div id="auth-msg"></div>
+      </div>
+    </div>
+
+    <div id="auth-signed-in">
+      <div class="user-badge">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div>
+          <div class="user-info-label">Signed in · stats synced</div>
+          <div class="user-info-email" id="user-email-label"></div>
+        </div>
+      </div>
+      <button id="signout-btn" onclick="doSignOut()">Sign out</button>
+    </div>
+  </div>
+
+  <div id="stats">
+    <div class="stat"><div class="stl">Time</div><div class="stv" id="st">0:00</div></div>
+    <div class="stat"><div class="stl">Mistakes</div><div class="stv" id="sm">0</div></div>
+    <div class="stat"><div class="stl">Difficulty</div><div class="stv" id="sd">—</div><div class="stb" id="ubadge"></div></div>
+  </div>
+
+  <div id="diff">
+    <button class="db" data-d="easy"   onclick="newGame('easy')">Easy</button>
+    <button class="db" data-d="medium" onclick="newGame('medium')">Medium</button>
+    <button class="db" data-d="hard"   onclick="newGame('hard')">Hard</button>
+    <button class="db" data-d="daily"  onclick="newDailyGame()">Daily</button>
+  </div>
+  <div id="genmsg"></div>
+
+  <div id="game">
+    <div id="gw">
+      <div id="grid"></div>
+      <svg id="csvg" style="position:absolute;top:0;left:0;pointer-events:none;"></svg>
+    </div>
+  </div>
+  <div id="np"></div>
+  <div id="acts">
+    <button class="ab" onclick="doUndo()">↩ Undo</button>
+    <button class="ab" onclick="doErase()">✕ Erase</button>
+    <button class="ab" id="nbtn" onclick="toggleNotes()">✎ Notes</button>
+    <button class="ab" onclick="repeatNew()">↺ New</button>
+  </div>
+
+  <div id="win">
+    <h2>Puzzle solved!</h2>
+    <div class="wpct" id="wp">…</div>
+    <div class="wpl" id="wpl">Calculating percentile…</div>
+    <div class="wrow3">
+      <div class="wc"><div class="wcl">Time</div><div class="wcv" id="wt">—</div></div>
+      <div class="wc"><div class="wcl">Mistakes</div><div class="wcv" id="wm">—</div></div>
+      <div class="wc"><div class="wcl">vs your avg</div><div class="wcv" id="wva">—</div></div>
+    </div>
+    <div class="wdivider"></div>
+    <div class="wtitle" id="stats-label">Your stats</div>
+    <div class="wrow3">
+      <div class="wc"><div class="wcl">Best time</div><div class="wcv gold" id="s-best">—</div><div id="s-best-sub" style="font-size:9px;color:#1D9E75;min-height:12px;margin-top:2px;"></div></div>
+      <div class="wc"><div class="wcl">Avg time</div><div class="wcv" id="s-avg">—</div></div>
+      <div class="wc"><div class="wcl">Win rate</div><div class="wcv" id="s-wr">—</div></div>
+    </div>
+    <div class="wbottom">
+      <div class="wbc"><div class="wcl">Clean wins</div><div class="wcv" id="s-cw">—</div></div>
+      <div class="wbsep"></div>
+      <div class="wbc"><div class="wcl">Finished</div><div class="wcv" id="s-fin">—</div></div>
+      <div class="wbsep"></div>
+      <div class="wbc"><div class="wcl">Started</div><div class="wcv" id="s-sta">—</div></div>
+    </div>
+    <button class="wbtn" onclick="repeatNew()">Play again</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ---- Config ----
+const SB_URL = 'https://pdetqrprchbbwghsbcap.supabase.co';
+const SB_KEY = 'sb_publishable_TzFzkQG1txNJkSNwVxl0Ng_ROpMV0A0';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ---- State ----
+let sol, board, notes, cages, cageId;
+let sel = null, mis = 0, hist = [], noteMode = false, cDiff = 'easy', lastDaily = false;
+let tInt, secs = 0, connected = false, currentUser = null;
+const fmt = s => Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + s % 60;
+
+// ---- Personal stats ----
+const defaultStat = () => ({ started: 0, finished: 0, noMistakes: 0, totalSecs: 0, bestSecs: 0 });
+let pStats = { easy: defaultStat(), medium: defaultStat(), hard: defaultStat(), daily: defaultStat() };
+
+function loadLocalStats() {
+  try {
+    const d = localStorage.getItem('ks_stats');
+    if (d) { const p = JSON.parse(d); for (const k of Object.keys(pStats)) if (p[k]) pStats[k] = { ...defaultStat(), ...p[k] }; }
+  } catch (e) {}
+}
+function saveLocalStats() {
+  try { localStorage.setItem('ks_stats', JSON.stringify(pStats)); } catch (e) {}
+}
+
+async function loadRemoteStats() {
+  if (!currentUser) return;
+  try {
+    const { data } = await sb.from('user_stats').select('*').eq('user_id', currentUser.id);
+    if (data && data.length > 0) {
+      for (const row of data) {
+        const k = row.difficulty;
+        if (!pStats[k]) continue;
+        const local = pStats[k];
+        // Merge: take best of each metric
+        pStats[k] = {
+          finished:   Math.max(local.finished, row.finished),
+          noMistakes: Math.max(local.noMistakes, row.no_mistakes),
+          started:    Math.max(local.started, row.started),
+          totalSecs:  local.finished >= row.finished ? local.totalSecs : row.total_secs,
+          bestSecs:   local.bestSecs > 0 && row.best_secs > 0 ? Math.min(local.bestSecs, row.best_secs) : (local.bestSecs || row.best_secs)
+        };
+      }
+      saveLocalStats();
+    }
+    // Upload merged stats back to Supabase
+    for (const diff of Object.keys(pStats)) {
+      if (pStats[diff].finished > 0 || pStats[diff].started > 0) await upsertRemoteStat(diff);
+    }
+  } catch (e) {}
+}
+
+async function upsertRemoteStat(diff) {
+  if (!currentUser) return;
+  const d = pStats[diff];
+  try {
+    await sb.from('user_stats').upsert({
+      user_id: currentUser.id, difficulty: diff,
+      finished: d.finished, no_mistakes: d.noMistakes,
+      total_secs: d.totalSecs, best_secs: d.bestSecs,
+      started: d.started, updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,difficulty' });
+  } catch (e) {}
+}
+
+async function saveStats(diff) {
+  saveLocalStats();
+  if (diff) await upsertRemoteStat(diff);
+}
+
+// ---- Auth ----
+function toggleAuthPanel() {
+  const panel = document.getElementById('auth-panel');
+  const chevron = document.getElementById('auth-chevron');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+function closeAuthPanel() {
+  document.getElementById('auth-panel').classList.remove('open');
+  document.getElementById('auth-chevron').classList.remove('open');
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('auth-email-input').value.trim();
+  const msg = document.getElementById('auth-msg');
+  if (!email || !email.includes('@')) { msg.textContent = 'Please enter a valid email.'; msg.className = 'err'; return; }
+  const btn = document.getElementById('auth-send-btn');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  try {
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+    if (error) throw error;
+    msg.textContent = 'Magic link sent! Check your email and click the link.';
+    msg.className = '';
+    btn.textContent = 'Resend';
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message;
+    msg.className = 'err';
+    btn.textContent = 'Send magic link';
+  }
+  btn.disabled = false;
+}
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  updateAuthUI(null);
+}
+
+function updateAuthUI(user) {
+  const prompt = document.getElementById('auth-prompt');
+  const signedIn = document.getElementById('auth-signed-in');
+  if (user) {
+    prompt.style.display = 'none';
+    signedIn.style.display = 'flex';
+    const email = user.email || '';
+    document.getElementById('user-email-label').textContent = email;
+    document.getElementById('user-avatar').textContent = email.charAt(0).toUpperCase();
+  } else {
+    prompt.style.display = 'block';
+    signedIn.style.display = 'none';
+  }
+}
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadRemoteStats();
+    updateAuthUI(currentUser);
+  } else {
+    updateAuthUI(null);
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await loadRemoteStats();
+      updateAuthUI(currentUser);
+      closeAuthPanel();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      updateAuthUI(null);
+    }
+  });
+}
+
+// ---- Backend (global percentile) ----
+async function testBackend() {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/solve_times?select=id&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
+    if (res.ok || res.status === 406) {
+      connected = true;
+      document.getElementById('conn-dot').classList.add('on');
+      document.getElementById('conn-label').textContent = 'Backend connected';
+    } else document.getElementById('conn-label').textContent = 'Backend unavailable — simulated percentiles';
+  } catch (e) { document.getElementById('conn-label').textContent = 'Simulated percentiles'; }
+}
+
+async function recordSolve(diff, seconds, mistakes) {
+  if (!connected) return null;
+  try {
+    await fetch(`${SB_URL}/rest/v1/solve_times`, { method: 'POST', headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ difficulty: diff, seconds, mistakes }) });
+    const r1 = await fetch(`${SB_URL}/rest/v1/solve_times?difficulty=eq.${diff}&seconds=lt.${seconds}&select=id`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Prefer': 'count=exact', 'Range': '0-0' } });
+    const faster = parseInt((r1.headers.get('Content-Range') || '*/0').split('/')[1]) || 0;
+    const r2 = await fetch(`${SB_URL}/rest/v1/solve_times?difficulty=eq.${diff}&select=id`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Prefer': 'count=exact', 'Range': '0-0' } });
+    const total = Math.max(1, parseInt((r2.headers.get('Content-Range') || '*/1').split('/')[1]) || 1);
+    return Math.round((faster / total) * 100);
+  } catch (e) { return null; }
+}
+
+// ---- RNG ----
+function mkRng(seed) { let s = (seed ^ 0x9e3779b9) >>> 0; return () => { s = Math.imul(s ^ (s >>> 16), 0x45d9f3b); s = Math.imul(s ^ (s >>> 16), 0x45d9f3b); s ^= s >>> 16; return (s >>> 0) / 4294967296; }; }
+
+// ---- Puzzle gen ----
+function genSol(rng) { const g = Array.from({ length: 9 }, () => Array(9).fill(0)); const ok = (r, c, n) => { for (let i = 0; i < 9; i++) if (g[r][i] === n || g[i][c] === n) return false; const br = ~~(r / 3) * 3, bc = ~~(c / 3) * 3; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (g[br + i][bc + j] === n) return false; return true; }; const fill = p => { if (p === 81) return true; const r = ~~(p / 9), c = p % 9; const ns = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => rng() - .5); for (const n of ns) if (ok(r, c, n)) { g[r][c] = n; if (fill(p + 1)) return true; g[r][c] = 0; } return false; }; fill(0); return g; }
+function genCages(s, diff, rng) { const maxSz = diff === 'easy' ? 5 : diff === 'medium' ? 4 : 3; const ci = Array.from({ length: 9 }, () => Array(9).fill(-1)); const cs = []; let id = 0; const cells = []; for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) cells.push([r, c]); cells.sort(() => rng() - .5); for (const [sr, sc] of cells) { if (ci[sr][sc] !== -1) continue; const sz = 2 + ~~(rng() * (maxSz - 1)); const cage = [[sr, sc]]; ci[sr][sc] = id; let tries = 0; while (cage.length < sz && tries < 40) { const [r, c] = cage[~~(rng() * cage.length)]; const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]].sort(() => rng() - .5); let added = false; for (const [dr, dc] of dirs) { const nr = r + dr, nc = c + dc; if (nr >= 0 && nr < 9 && nc >= 0 && nc < 9 && ci[nr][nc] === -1) { cage.push([nr, nc]); ci[nr][nc] = id; added = true; break; } } if (!added) tries++; } cs.push({ id, cells: cage, sum: cage.reduce((t, [r, c]) => t + s[r][c], 0) }); id++; } return { cages: cs, cageId: ci }; }
+function cageValidDigits(size, sum) { const v = new Set(); function f(s, r, c, cur) { if (c === 0) { if (r === 0) cur.forEach(n => v.add(n)); return; } for (let n = s; n <= 9 && r - n >= c - 1; n++) { cur.push(n); f(n + 1, r - n, c - 1, cur); cur.pop(); } } f(1, sum, size, []); return v; }
+function hasUnique(cg, ci) { const nc = cg.length, cvd = cg.map(c => cageValidDigits(c.cells.length, c.sum)); const ccid = Array.from({ length: 81 }, (_, i) => ci[~~(i / 9)][i % 9]); const rU = new Int32Array(9), cU = new Int32Array(9), bU = new Int32Array(9), caU = new Int32Array(nc), caFS = new Int32Array(nc), caFC = new Int32Array(nc); const csz = cg.map(c => c.cells.length), csum = cg.map(c => c.sum); let count = 0, iters = 0; function solve(pos) { if (count > 1 || iters++ > 900000) return; if (pos === 81) { count++; return; } const r = ~~(pos / 9), c = pos % 9, box = ~~(r / 3) * 3 + ~~(c / 3), cid = ccid[pos]; const remS = csum[cid] - caFS[cid], remC = csz[cid] - caFC[cid], used = rU[r] | cU[c] | bU[box] | caU[cid]; for (let n = 1; n <= 9; n++) { if (used & (1 << n)) continue; if (!cvd[cid].has(n)) continue; const ns = remS - n, nc2 = remC - 1; if (nc2 === 0) { if (ns !== 0) continue; } else { if (ns < nc2 || ns > nc2 * 9) continue; } const bit = 1 << n; rU[r] |= bit; cU[c] |= bit; bU[box] |= bit; caU[cid] |= bit; caFS[cid] += n; caFC[cid]++; solve(pos + 1); rU[r] ^= bit; cU[c] ^= bit; bU[box] ^= bit; caU[cid] ^= bit; caFS[cid] -= n; caFC[cid]--; if (count > 1 || iters > 900000) return; } } solve(0); return count === 1; }
+function generatePuzzle(diff, rng) { for (let a = 0; a < 10; a++) { const s = genSol(rng); const g = genCages(s, diff, rng); if (hasUnique(g.cages, g.cageId)) return { sol: s, ...g, unique: true }; } const s = genSol(rng); const g = genCages(s, diff, rng); return { sol: s, ...g, unique: false }; }
+
+// ---- Render ----
+function gridSize() { return Math.min(360, window.innerWidth - 32); }
+function render() {
+  const grid = document.getElementById('grid'), sz = gridSize();
+  grid.style.width = sz + 'px'; grid.style.height = sz + 'px';
+  grid.style.gridTemplateColumns = `repeat(9,${sz / 9}px)`;
+  const svg = document.getElementById('csvg');
+  svg.style.width = sz + 'px'; svg.style.height = sz + 'px';
+  grid.innerHTML = '';
+  const scage = sel ? cageId[sel[0]][sel[1]] : -1;
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) {
+    const el = document.createElement('div'); el.className = 'cell'; el.dataset.r = r; el.dataset.c = c;
+    const v = board[r][c];
+    if (v !== 0) { el.textContent = v; if (v !== sol[r][c]) el.classList.add('err'); }
+    else if (notes[r][c].size > 0) { const ng = document.createElement('div'); ng.className = 'ng'; for (let nv = 1; nv <= 9; nv++) { const nd = document.createElement('div'); nd.className = 'nn'; nd.textContent = notes[r][c].has(nv) ? nv : ''; ng.appendChild(nd); } el.appendChild(ng); }
+    if (sel) { const [sr, sc] = sel; if (sr === r && sc === c) el.classList.add('sel'); else if (cageId[r][c] === scage) el.classList.add('chi'); else if (sr === r || sc === c || (~~(sr / 3) === ~~(r / 3) && ~~(sc / 3) === ~~(c / 3))) el.classList.add('hi'); }
+    el.addEventListener('click', () => { sel = [r, c]; render(); }); grid.appendChild(el);
+  }
+  renderSVG();
+}
+function renderSVG() {
+  const svg = document.getElementById('csvg'), sz = gridSize(), CS2 = sz / 9, p = 2;
+  svg.setAttribute('viewBox', `0 0 ${sz} ${sz}`); svg.innerHTML = '';
+  for (const cage of cages) {
+    const cset = new Set(cage.cells.map(([r, c]) => r * 9 + c)); const segs = [];
+    for (const [r, c] of cage.cells) { const x = c * CS2, y = r * CS2; if (r === 0 || !cset.has((r - 1) * 9 + c)) segs.push(`M${x+p},${y+p}L${x+CS2-p},${y+p}`); if (c === 8 || !cset.has(r * 9 + c + 1)) segs.push(`M${x+CS2-p},${y+p}L${x+CS2-p},${y+CS2-p}`); if (r === 8 || !cset.has((r + 1) * 9 + c)) segs.push(`M${x+p},${y+CS2-p}L${x+CS2-p},${y+CS2-p}`); if (c === 0 || !cset.has(r * 9 + c - 1)) segs.push(`M${x+p},${y+p}L${x+p},${y+CS2-p}`); }
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', segs.join(' ')); path.setAttribute('stroke', '#888'); path.setAttribute('stroke-width', '1.5'); path.setAttribute('stroke-dasharray', '3,2'); path.setAttribute('fill', 'none'); path.setAttribute('stroke-linecap', 'round'); svg.appendChild(path);
+    const lc = cage.cells.reduce((m, [r, c]) => r < m[0] || (r === m[0] && c < m[1]) ? [r, c] : m); const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text'); const fs = Math.max(7, Math.round(CS2 * 0.26)); txt.setAttribute('x', lc[1] * CS2 + 3); txt.setAttribute('y', lc[0] * CS2 + fs + 1); txt.setAttribute('font-size', fs); txt.setAttribute('font-weight', '600'); txt.setAttribute('fill', '#666'); txt.textContent = cage.sum; svg.appendChild(txt);
+  }
+}
+
+// ---- Input ----
+function inputNum(n) { if (!sel) return; const [r, c] = sel; if (noteMode) { hist.push({ t: 'n', r, c, v: new Set(notes[r][c]) }); notes[r][c].has(n) ? notes[r][c].delete(n) : notes[r][c].add(n); } else { hist.push({ t: 'v', r, c, v: board[r][c] }); board[r][c] = n; if (n !== sol[r][c]) { mis++; document.getElementById('sm').textContent = mis; } checkWin(); } render(); }
+function doErase() { if (!sel) return; const [r, c] = sel; hist.push({ t: 'v', r, c, v: board[r][c] }); board[r][c] = 0; notes[r][c].clear(); render(); }
+function doUndo() { if (!hist.length) return; const h = hist.pop(); if (h.t === 'v') board[h.r][h.c] = h.v; else notes[h.r][h.c] = h.v; render(); }
+function toggleNotes() { noteMode = !noteMode; document.getElementById('nbtn').classList.toggle('on', noteMode); }
+function repeatNew() { lastDaily ? newDailyGame() : newGame(cDiff); }
+
+// ---- Win ----
+async function checkWin() {
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (board[r][c] !== sol[r][c]) return;
+  clearInterval(tInt);
+  const d = pStats[cDiff], prevFinished = d.finished, prevTotalSecs = d.totalSecs;
+  d.finished++; d.totalSecs += secs;
+  if (mis === 0) d.noMistakes++;
+  const isNewBest = d.bestSecs === 0 || secs < d.bestSecs;
+  if (isNewBest) d.bestSecs = secs;
+  await saveStats(cDiff);
+
+  const vvaEl = document.getElementById('wva');
+  if (prevFinished === 0) { vvaEl.textContent = 'First solve!'; vvaEl.className = 'wcv'; }
+  else { const avg = prevTotalSecs / prevFinished, pct = Math.round(Math.abs((avg - secs) / avg * 100)); if (secs < avg) { vvaEl.textContent = `+${pct}% faster`; vvaEl.className = 'wcv good'; } else if (secs > avg) { vvaEl.textContent = `${pct}% slower`; vvaEl.className = 'wcv bad'; } else { vvaEl.textContent = 'On average'; vvaEl.className = 'wcv'; } }
+
+  const bestEl = document.getElementById('s-best');
+  bestEl.textContent = fmt(d.bestSecs);
+  bestEl.className = isNewBest && prevFinished > 0 ? 'wcv good' : 'wcv gold';
+  document.getElementById('s-best-sub').textContent = isNewBest && prevFinished > 0 ? 'New record!' : '';
+  document.getElementById('s-avg').textContent = fmt(Math.round(d.totalSecs / d.finished));
+  document.getElementById('s-wr').textContent = d.started > 0 ? Math.round(d.finished / d.started * 100) + '%' : '100%';
+  document.getElementById('wt').textContent = fmt(secs); document.getElementById('wm').textContent = mis;
+  document.getElementById('s-cw').textContent = d.noMistakes; document.getElementById('s-fin').textContent = d.finished; document.getElementById('s-sta').textContent = d.started;
+  document.getElementById('stats-label').textContent = `Your ${cDiff === 'daily' ? 'Daily' : cDiff.charAt(0).toUpperCase() + cDiff.slice(1)} stats`;
+  document.getElementById('game').style.display = 'none'; document.getElementById('np').style.display = 'none'; document.getElementById('acts').style.display = 'none';
+  document.getElementById('wp').textContent = '…'; document.getElementById('wpl').textContent = 'Calculating percentile…'; document.getElementById('win').style.display = 'block';
+  const realPct = await recordSolve(cDiff, secs, mis);
+  if (realPct !== null) { document.getElementById('wp').textContent = realPct + '%'; document.getElementById('wp').className = 'wpct real'; document.getElementById('wpl').textContent = `faster than ${realPct}% of all players · live data`; }
+  else { const sim = Math.min(99, Math.max(1, Math.round(50 * (1 + Math.log2(Math.max(.1, ({ easy: 480, medium: 900, hard: 1500, daily: 900 }[cDiff] || 900) / secs)) * .55)))); document.getElementById('wp').textContent = sim + '%'; document.getElementById('wp').className = 'wpct sim'; document.getElementById('wpl').textContent = `faster than ${sim}% of players · simulated`; }
+}
+
+// ---- New game ----
+function setupGame(result, diff, label, isDaily) {
+  sol = result.sol; cages = result.cages; cageId = result.cageId; cDiff = diff; lastDaily = !!isDaily;
+  board = Array.from({ length: 9 }, () => Array(9).fill(0)); notes = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => new Set()));
+  sel = null; mis = 0; hist = []; noteMode = false; document.getElementById('nbtn').classList.remove('on');
+  document.getElementById('sm').textContent = '0'; document.getElementById('sd').textContent = label; document.getElementById('ubadge').textContent = result.unique ? '✓ unique' : '';
+  document.getElementById('genmsg').textContent = ''; document.getElementById('game').style.display = 'flex'; document.getElementById('np').style.display = 'grid'; document.getElementById('acts').style.display = 'flex'; document.getElementById('win').style.display = 'none';
+  clearInterval(tInt); secs = 0; document.getElementById('st').textContent = '0:00';
+  tInt = setInterval(() => { secs++; document.getElementById('st').textContent = fmt(secs); }, 1000);
+  pStats[diff].started++; saveStats(diff); render();
+}
+function newGame(diff) { document.querySelectorAll('#diff .db').forEach(b => b.classList.remove('on', 'don')); document.querySelector(`[data-d="${diff}"]`).classList.add('on'); document.getElementById('genmsg').textContent = 'Generating unique puzzle…'; document.getElementById('game').style.display = 'none'; const rng = mkRng((Date.now() ^ ~~(Math.random() * 0xffffff)) >>> 0); setTimeout(() => { const r = generatePuzzle(diff, rng); setupGame(r, diff, diff.charAt(0).toUpperCase() + diff.slice(1), false); }, 50); }
+function newDailyGame() { document.querySelectorAll('#diff .db').forEach(b => b.classList.remove('on', 'don')); document.querySelector('[data-d="daily"]').classList.add('don'); document.getElementById('genmsg').textContent = "Generating today's puzzle…"; document.getElementById('game').style.display = 'none'; const d = new Date(); const seed = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()) >>> 0; const label = `Daily · ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`; setTimeout(() => { const r = generatePuzzle('medium', mkRng(seed)); setupGame(r, 'daily', label, true); }, 50); }
+
+// ---- Numpad ----
+const npEl = document.getElementById('np');
+for (let n = 1; n <= 9; n++) { const b = document.createElement('button'); b.className = 'nb'; b.textContent = n; b.addEventListener('click', () => inputNum(n)); npEl.appendChild(b); }
+
+// ---- Keyboard ----
+document.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '9') inputNum(+e.key);
+  else if (e.key === 'Backspace' || e.key === 'Delete') doErase();
+  else if ((e.ctrlKey || e.metaKey) && e.key === 'z') doUndo();
+  else if (sel) { const [r, c] = sel; if (e.key === 'ArrowUp' && r > 0) { sel = [r - 1, c]; render(); } else if (e.key === 'ArrowDown' && r < 8) { sel = [r + 1, c]; render(); } else if (e.key === 'ArrowLeft' && c > 0) { sel = [r, c - 1]; render(); } else if (e.key === 'ArrowRight' && c < 8) { sel = [r, c + 1]; render(); } }
+});
+window.addEventListener('resize', () => { if (sol) render(); });
+
+// ---- Init ----
+loadLocalStats();
+testBackend();
+initAuth().then(() => newGame('easy'));
+</script>
+</body>
+</html>
