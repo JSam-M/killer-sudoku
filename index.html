@@ -8,924 +8,783 @@
 <meta name="apple-mobile-web-app-title" content="Killer Sudoku">
 <title>Killer Sudoku</title>
 <style>
-/* ── Apple-style design system ─────────────────────────────── */
+/* ─── Tokens ────────────────────────────────────────────── */
 :root {
-  /* Dark (default) */
-  --bg:        #000000;
-  --bg1:       #1c1c1e;
-  --bg2:       #2c2c2e;
-  --bg3:       #3a3a3c;
-  --label:     #ffffff;
-  --label2:    rgba(255,255,255,.60);
-  --label3:    rgba(255,255,255,.30);
-  --sep:       rgba(255,255,255,.12);
-  --fill:      rgba(255,255,255,.06);
-  --fill2:     rgba(255,255,255,.10);
-  --accent:    #30d158;   /* Apple green */
-  --accent2:   #1a7a33;
-  --accent-fg: #000000;
-  --red:       #ff453a;
-  --orange:    #ff9f0a;
-  --blue:      #0a84ff;
-  --sel:       rgba(48,209,88,.20);
-  --sel2:      rgba(48,209,88,.10);
-  --hi:        rgba(255,255,255,.05);
-  --num-color: #30d158;
-  --r:         14px;
-  --r-sm:      10px;
+  --bg:       #000;
+  --bg1:      #1c1c1e;
+  --bg2:      #2c2c2e;
+  --bg3:      #3a3a3c;
+  --label:    #fff;
+  --label2:   rgba(255,255,255,.55);
+  --label3:   rgba(255,255,255,.28);
+  --sep:      rgba(255,255,255,.11);
+  --fill:     rgba(255,255,255,.07);
+  --accent:   #30d158;
+  --acc-fg:   #000;
+  --red:      #ff453a;
+  --orange:   #ff9f0a;
+  --blue:     #0a84ff;
+  --sel:      rgba(48,209,88,.22);
+  --sel2:     rgba(48,209,88,.09);
+  --hi:       rgba(255,255,255,.05);
+  --r:        14px;
+  --r-sm:     10px;
+  /* grid */
+  --grid-bg:  #111;
+  --cell-sep: rgba(255,255,255,.09);
+  --box-sep:  rgba(255,255,255,.45);
+  --cage-clr: rgba(255,255,255,.22);
+  --cage-lbl: rgba(255,255,255,.45);
 }
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg:        #f2f2f7;
-    --bg1:       #ffffff;
-    --bg2:       #f2f2f7;
-    --bg3:       #e5e5ea;
-    --label:     #000000;
-    --label2:    rgba(0,0,0,.55);
-    --label3:    rgba(0,0,0,.30);
-    --sep:       rgba(0,0,0,.12);
-    --fill:      rgba(0,0,0,.04);
-    --fill2:     rgba(0,0,0,.07);
-    --accent:    #34c759;
-    --accent2:   #248a3d;
-    --accent-fg: #ffffff;
-    --red:       #ff3b30;
-    --orange:    #ff9500;
-    --blue:      #007aff;
-    --sel:       rgba(52,199,89,.20);
-    --sel2:      rgba(52,199,89,.10);
-    --hi:        rgba(0,0,0,.04);
-    --num-color: #34c759;
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#f2f2f7;--bg1:#fff;--bg2:#e5e5ea;--bg3:#d1d1d6;
+    --label:#000;--label2:rgba(0,0,0,.55);--label3:rgba(0,0,0,.28);
+    --sep:rgba(0,0,0,.11);--fill:rgba(0,0,0,.05);
+    --accent:#34c759;--acc-fg:#fff;--red:#ff3b30;--orange:#ff9500;--blue:#007aff;
+    --sel:rgba(52,199,89,.20);--sel2:rgba(52,199,89,.09);--hi:rgba(0,0,0,.04);
+    --grid-bg:#fff;--cell-sep:rgba(0,0,0,.08);--box-sep:rgba(0,0,0,.40);
+    --cage-clr:rgba(0,0,0,.22);--cage-lbl:rgba(0,0,0,.40);
   }
 }
 
-/* ── Reset ─────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { height: 100%; background: var(--bg); }
-body {
-  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
-  background: var(--bg);
-  color: var(--label);
-  min-height: 100%;
-  min-height: -webkit-fill-available;
-  overscroll-behavior: none;
-  -webkit-font-smoothing: antialiased;
+/* ─── Reset ─────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;background:var(--bg);}
+body{
+  font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif;
+  background:var(--bg);color:var(--label);
+  min-height:100%;min-height:-webkit-fill-available;
+  overscroll-behavior:none;-webkit-font-smoothing:antialiased;
 }
 
-/* ── Screen system ─────────────────────────────────────────── */
-.screen { display: none; flex-direction: column; min-height: 100vh; min-height: -webkit-fill-available; }
-.screen.active { display: flex; }
+/* ─── Screens ───────────────────────────────────────────── */
+.scr{display:none;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available;}
+.scr.active{display:flex;}
 
-/* ══════════════════════════════════════════════════════════════
-   AUTH SCREEN
-══════════════════════════════════════════════════════════════ */
-#s-auth {
-  align-items: center; justify-content: center;
-  padding: calc(env(safe-area-inset-top,0px) + 40px) 20px calc(env(safe-area-inset-bottom,0px) + 24px);
-  background: var(--bg);
+/* ═══════════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════════ */
+#s-auth{
+  align-items:center;justify-content:center;background:var(--bg);
+  padding:calc(env(safe-area-inset-top,0px)+32px) 20px
+          calc(env(safe-area-inset-bottom,0px)+24px);
 }
-.auth-scroll { width: 100%; max-width: 390px; overflow-y: auto; }
+.auth-inner{width:100%;max-width:390px;}
 
-/* Logo */
-.auth-logo { text-align: center; margin-bottom: 36px; }
-.auth-logo-icon {
-  width: 72px; height: 72px; border-radius: 18px;
-  background: var(--accent); margin: 0 auto 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px; box-shadow: 0 8px 24px rgba(48,209,88,.35);
+.auth-icon{
+  width:64px;height:64px;border-radius:16px;background:var(--accent);
+  margin:0 auto 12px;display:flex;align-items:center;justify-content:center;
+  font-size:32px;
 }
-.auth-logo h1 {
-  font-size: 28px; font-weight: 700; letter-spacing: -.4px;
-  color: var(--label);
-}
-.auth-logo p { font-size: 15px; color: var(--label2); margin-top: 4px; }
+.auth-h1{font-size:26px;font-weight:700;letter-spacing:-.3px;text-align:center;margin-bottom:4px;}
+.auth-sub{font-size:15px;color:var(--label2);text-align:center;margin-bottom:28px;}
 
-/* Cards */
-.auth-card {
-  background: var(--bg1); border-radius: var(--r);
-  overflow: hidden; margin-bottom: 12px;
+/* Inset grouped list (Settings.app style) */
+.ilist{background:var(--bg1);border-radius:var(--r);overflow:hidden;margin-bottom:8px;}
+.ilist-hdr{font-size:13px;font-weight:500;color:var(--label2);padding:0 16px 6px;letter-spacing:.1px;}
+.irow{display:flex;align-items:center;padding:11px 16px;border-top:.5px solid var(--sep);}
+.irow:first-of-type{border-top:none;}
+.irow-lbl{font-size:17px;color:var(--label);width:100px;flex-shrink:0;}
+.irow-inp{
+  flex:1;font-size:17px;background:transparent;border:none;color:var(--label);
+  outline:none;font-family:inherit;min-width:0;
 }
-.auth-card-title {
-  font-size: 13px; font-weight: 600; color: var(--label2);
-  text-transform: uppercase; letter-spacing: .6px;
-  padding: 12px 16px 6px;
+.irow-inp::placeholder{color:var(--label3);}
+.irow-inp.pass{font-size:22px;letter-spacing:5px;}
+.irow-btn{
+  font-size:14px;font-weight:500;color:var(--accent);
+  background:none;border:none;cursor:pointer;font-family:inherit;
+  padding:4px 8px;flex-shrink:0;
 }
-.auth-row-item {
-  display: flex; align-items: center;
-  padding: 12px 16px; border-top: .5px solid var(--sep);
-  gap: 12px;
-}
-.auth-row-item:first-of-type { border-top: none; }
-.auth-row-label {
-  font-size: 17px; color: var(--label); flex: 0 0 110px;
-}
-.auth-row-input {
-  flex: 1; font-size: 17px; background: transparent; border: none;
-  color: var(--label); outline: none; font-family: inherit;
-  min-width: 0;
-}
-.auth-row-input::placeholder { color: var(--label3); }
-.auth-row-check {
-  padding: 6px 12px; font-size: 13px; font-weight: 500;
-  background: var(--fill2); border: none; border-radius: 6px;
-  color: var(--accent); cursor: pointer; font-family: inherit;
-  flex-shrink: 0;
-}
-.auth-row-check:active { opacity: .6; }
-.uname-hint {
-  font-size: 12px; padding: 6px 16px 10px;
-  border-top: .5px solid var(--sep);
-}
-.uname-hint.ok { color: var(--accent); }
-.uname-hint.err { color: var(--red); }
-.uname-hint.info { color: var(--label3); }
+.irow-btn:active{opacity:.5;}
+.ilist-foot{font-size:12px;color:var(--label3);padding:6px 16px 10px;}
+.ilist-foot.ok{color:var(--accent);}
+.ilist-foot.err{color:var(--red);}
 
-.passcode-field {
-  width: 100%; font-size: 28px; text-align: center; letter-spacing: 8px;
-  background: transparent; border: none; outline: none;
-  color: var(--label); font-family: inherit; padding: 14px 16px;
-  -webkit-text-security: disc;
+.auth-btn{
+  width:100%;padding:15px;font-size:17px;font-weight:600;
+  background:var(--accent);color:var(--acc-fg);
+  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;
+  margin-bottom:10px;
 }
-.passcode-hint { font-size: 12px; color: var(--label3); text-align: center; padding: 0 16px 10px; border-top: .5px solid var(--sep); }
+.auth-btn:active{opacity:.8;}
+.auth-btn:disabled{opacity:.3;cursor:not-allowed;}
+.auth-btn.ghost{background:var(--bg1);color:var(--label2);}
+.auth-lnk{text-align:center;font-size:15px;color:var(--label2);margin-bottom:6px;}
+.auth-lnk span{color:var(--accent);cursor:pointer;}
+.auth-err{font-size:13px;color:var(--red);text-align:center;min-height:18px;margin-bottom:6px;}
+.auth-or{
+  display:flex;align-items:center;gap:10px;margin:12px 0 10px;
+}
+.auth-or-line{flex:1;height:.5px;background:var(--sep);}
+.auth-or-txt{font-size:13px;color:var(--label3);}
 
-/* Auth action buttons */
-.auth-action {
-  width: 100%; padding: 16px; font-size: 17px; font-weight: 600;
-  background: var(--accent); color: var(--accent-fg);
-  border: none; border-radius: var(--r); cursor: pointer;
-  font-family: inherit; margin-bottom: 12px;
-  transition: opacity .15s;
+/* ═══════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════ */
+#s-home{background:var(--bg);}
+.home-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top,0px)+52px) 20px 0;
 }
-.auth-action:active { opacity: .75; }
-.auth-action:disabled { opacity: .3; cursor: not-allowed; }
-.auth-action.secondary {
-  background: var(--bg1); color: var(--label); border: none;
+.home-user{display:flex;align-items:center;gap:9px;}
+.home-av{
+  width:30px;height:30px;border-radius:50%;background:var(--accent);
+  color:var(--acc-fg);display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
 }
+.home-name{font-size:15px;font-weight:500;}
+.home-out{font-size:14px;color:var(--label2);cursor:pointer;}
 
-.auth-link-row { text-align: center; font-size: 15px; color: var(--label2); margin-bottom: 8px; }
-.auth-link { color: var(--accent); cursor: pointer; }
+.home-hero{padding:36px 20px 28px;text-align:center;}
+.home-hero-ico{font-size:52px;margin-bottom:10px;}
+.home-hero-h{font-size:34px;font-weight:700;letter-spacing:-.5px;}
+.home-hero-s{font-size:17px;color:var(--label2);margin-top:5px;}
 
-.guest-section { margin-top: 8px; }
-.guest-sep { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.guest-sep-line { flex: 1; height: .5px; background: var(--sep); }
-.guest-sep-text { font-size: 13px; color: var(--label3); }
-.guest-btn {
-  width: 100%; padding: 16px; font-size: 17px; font-weight: 500;
-  background: var(--bg1); color: var(--label2);
-  border: none; border-radius: var(--r); cursor: pointer;
-  font-family: inherit;
+.home-sec-lbl{
+  font-size:13px;font-weight:500;color:var(--label2);
+  padding:0 20px 6px;letter-spacing:.1px;
 }
-.guest-btn:active { opacity: .7; }
+.diff-list{background:var(--bg1);border-radius:var(--r);margin:0 16px 20px;overflow:hidden;}
+.diff-item{
+  display:flex;align-items:center;padding:14px 16px;
+  border-top:.5px solid var(--sep);cursor:pointer;
+  transition:background .1s;gap:14px;
+}
+.diff-item:first-child{border-top:none;}
+.diff-item:active{background:var(--fill);}
+.diff-pip{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.diff-name{font-size:17px;font-weight:500;flex:1;}
+.diff-hint{font-size:14px;color:var(--label3);}
+.diff-chev{font-size:15px;color:var(--label3);margin-left:4px;}
 
-/* ══════════════════════════════════════════════════════════════
-   HOME SCREEN
-══════════════════════════════════════════════════════════════ */
-#s-home { background: var(--bg); }
+.daily-row{
+  background:var(--bg1);border-radius:var(--r);
+  margin:0 16px 32px;display:flex;align-items:center;
+  padding:14px 16px;cursor:pointer;gap:14px;
+  transition:background .1s;
+}
+.daily-row:active{background:var(--fill);}
+.daily-ico{
+  width:42px;height:42px;border-radius:10px;background:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.daily-txt{flex:1;}
+.daily-lbl{font-size:17px;font-weight:500;}
+.daily-sub{font-size:13px;color:var(--label2);margin-top:2px;}
+.daily-chev{font-size:15px;color:var(--label3);}
 
-.home-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: calc(env(safe-area-inset-top,0px) + 56px) 20px 0;
-}
-.home-nav-user { display: flex; align-items: center; gap: 10px; }
-.home-nav-av {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--accent); color: var(--accent-fg);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700;
-}
-.home-nav-name { font-size: 15px; font-weight: 500; color: var(--label); }
-.home-nav-signout {
-  font-size: 15px; color: var(--label2); cursor: pointer; padding: 4px;
-}
+/* ═══════════════════════════════════════════════════
+   GAME
+═══════════════════════════════════════════════════ */
+#s-game{background:var(--bg);}
 
-.home-hero { padding: 32px 20px 24px; text-align: center; }
-.home-hero-icon { font-size: 56px; margin-bottom: 8px; }
-.home-hero-title { font-size: 34px; font-weight: 700; letter-spacing: -.5px; color: var(--label); }
-.home-hero-sub { font-size: 17px; color: var(--label2); margin-top: 6px; }
-
-.home-section-title {
-  font-size: 13px; font-weight: 600; color: var(--label2);
-  text-transform: uppercase; letter-spacing: .6px;
-  padding: 0 20px 8px;
+/* Nav bar */
+.gnav{
+  display:flex;align-items:center;
+  padding:calc(env(safe-area-inset-top,0px)+10px) 16px 6px;
+  gap:0;
 }
-.diff-group {
-  background: var(--bg1); border-radius: var(--r);
-  margin: 0 16px 24px; overflow: hidden;
+.gnav-back{
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--accent);font-size:28px;font-weight:300;flex-shrink:0;
+  margin-left:-8px;
 }
-.diff-row {
-  display: flex; align-items: center; padding: 14px 16px;
-  border-top: .5px solid var(--sep); cursor: pointer;
-  transition: background .12s;
+.gnav-center{flex:1;text-align:center;}
+.gnav-title{font-size:17px;font-weight:600;letter-spacing:-.2px;}
+.gnav-sub{font-size:12px;color:var(--label2);margin-top:1px;}
+.gnav-pause{
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
 }
-.diff-row:first-child { border-top: none; }
-.diff-row:active { background: var(--fill2); }
-.diff-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  flex-shrink: 0; margin-right: 14px;
-}
-.diff-row-name { font-size: 17px; font-weight: 500; color: var(--label); flex: 1; }
-.diff-row-sub { font-size: 13px; color: var(--label3); margin-right: 8px; }
-.diff-chevron { font-size: 14px; color: var(--label3); }
-
-.daily-btn {
-  background: var(--bg1); border-radius: var(--r);
-  margin: 0 16px; padding: 16px; cursor: pointer;
-  display: flex; align-items: center; gap: 14px;
-  transition: background .12s;
-}
-.daily-btn:active { background: var(--fill2); }
-.daily-btn-icon {
-  width: 44px; height: 44px; border-radius: 10px;
-  background: var(--blue); display: flex; align-items: center;
-  justify-content: center; font-size: 22px; flex-shrink: 0;
-}
-.daily-btn-text { flex: 1; }
-.daily-btn-label { font-size: 17px; font-weight: 500; color: var(--label); }
-.daily-btn-sub { font-size: 13px; color: var(--label2); margin-top: 2px; }
-.daily-btn-arrow { font-size: 14px; color: var(--label3); }
-
-/* ══════════════════════════════════════════════════════════════
-   GAME SCREEN
-══════════════════════════════════════════════════════════════ */
-#s-game { background: var(--bg); }
-
-.game-nav {
-  display: flex; align-items: center;
-  padding: calc(env(safe-area-inset-top,0px) + 12px) 16px 8px;
-  gap: 8px;
-}
-.game-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--fill2); display: flex; align-items: center;
-  justify-content: center; cursor: pointer; font-size: 16px; color: var(--label2);
-  flex-shrink: 0;
-}
-.game-nav-title { flex: 1; text-align: center; }
-.game-nav-title h2 { font-size: 17px; font-weight: 600; color: var(--label); }
-.game-nav-title p { font-size: 12px; color: var(--label2); margin-top: 1px; }
-.game-pause {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--fill2); display: flex; align-items: center;
-  justify-content: center; cursor: pointer; font-size: 14px; color: var(--label2);
-  flex-shrink: 0;
-}
-.game-pause:active { background: var(--fill); }
-
-/* Stats */
-.game-stats {
-  display: grid; grid-template-columns: repeat(4,1fr);
-  padding: 4px 16px 10px; gap: 4px;
-}
-.gstat { text-align: center; }
-.gstat-lbl { font-size: 10px; font-weight: 500; color: var(--label3); text-transform: uppercase; letter-spacing: .4px; }
-.gstat-val { font-size: 17px; font-weight: 600; color: var(--label); font-variant-numeric: tabular-nums; }
-.gstat-val.warn { color: var(--orange); }
-.gstat-val.danger { color: var(--red); }
-
-/* Grid */
-.game-board-wrap {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  padding: 0 12px; position: relative;
-}
-#g-grid {
-  display: grid; grid-template-columns: repeat(9,1fr);
-  border: 2px solid rgba(255,255,255,.25); border-radius: 6px;
-  overflow: hidden; touch-action: manipulation;
-  background: var(--bg1); position: relative; z-index: 1;
-}
-@media(prefers-color-scheme:dark){
-  #g-grid { background: #0d1f15; }
-  .cell { background: #0d1f15; }
-  .cell.sel { background: rgba(48,209,88,.22) !important; }
-}
-.cell {
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  font-size: clamp(13px,3.8vw,19px); font-weight: 600;
-  color: var(--label); cursor: pointer; user-select: none;
-  background: var(--bg1);
-  border-right: .5px solid rgba(255,255,255,.07); border-bottom: .5px solid rgba(255,255,255,.07);
-  touch-action: manipulation; transition: background .08s; position: relative;
-}
-.cell:nth-child(3n):not(:nth-child(9n)) { border-right: 2px solid rgba(255,255,255,.30); }
-.cell:nth-child(9n) { border-right: none; }
-.cell[data-r="2"], .cell[data-r="5"] { border-bottom: 2px solid rgba(255,255,255,.30); }
-.cell[data-r="8"] { border-bottom: none; }
-.cell.sel  { background: var(--sel) !important; }
-.cell.cage-hi { background: var(--sel2); }
-.cell.hi   { background: var(--hi); }
-.cell.err  { color: var(--red); }
-.cell.ok   { color: var(--accent); }
-.cell.same { background: rgba(48,209,88,.08); }
-.ng { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); width: 100%; height: 100%; }
-.nn { display: flex; align-items: center; justify-content: center; font-size: clamp(4px,1vw,7px); color: var(--label3); font-weight: 400; }
-
-/* SVG cage lines — rendered ON TOP of grid, same size, no left offset */
-#g-svg {
-  position: absolute; top: 0; left: 12px;
-  pointer-events: none; z-index: 2;
+.gnav-pause-ico{
+  width:30px;height:30px;border-radius:50%;background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--label2);
 }
 
-/* Pause overlay */
-#pause-ov {
-  display: none; position: absolute; inset: 0; z-index: 20;
-  background: rgba(0,0,0,.7); backdrop-filter: blur(12px) saturate(1.5);
-  -webkit-backdrop-filter: blur(12px) saturate(1.5);
-  align-items: center; justify-content: center; flex-direction: column; gap: 16px;
-  border-radius: 4px;
+/* Stats strip */
+.gstats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:0 20px 10px;
 }
-#pause-ov.show { display: flex; }
-.pause-lbl { font-size: 22px; font-weight: 700; color: var(--label); }
-.pause-resume {
-  padding: 12px 32px; font-size: 17px; font-weight: 600;
-  background: var(--accent); color: var(--accent-fg);
-  border: none; border-radius: 14px; cursor: pointer; font-family: inherit;
+.gs{text-align:center;}
+.gs-lbl{
+  font-size:10px;font-weight:600;color:var(--label3);
+  text-transform:uppercase;letter-spacing:.5px;
 }
+.gs-val{
+  font-size:19px;font-weight:700;color:var(--label);
+  font-variant-numeric:tabular-nums;letter-spacing:-.3px;
+  margin-top:1px;
+}
+.gs-val.warn{color:var(--orange);}
+.gs-val.danger{color:var(--red);}
 
-/* Action bar */
-.game-actions {
-  display: grid; grid-template-columns: repeat(4,1fr);
-  gap: 8px; padding: 10px 12px 6px;
+/* Board */
+.board-outer{
+  display:flex;justify-content:center;
+  padding:0 14px;margin-bottom:10px;
+  position:relative;
 }
-.act {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 5px; padding: 11px 4px; background: var(--bg1);
-  border-radius: var(--r-sm); cursor: pointer; transition: background .1s;
+#g-grid{
+  display:grid;grid-template-columns:repeat(9,1fr);
+  border-radius:4px;overflow:hidden;touch-action:manipulation;
+  background:var(--grid-bg);
+  /* Outer border via outline — no layout effect */
+  outline:1.5px solid var(--box-sep);
+  outline-offset:-1px;
 }
-.act:active { background: var(--bg2); }
-.act.on { background: rgba(48,209,88,.15); }
-.act-ico { font-size: 20px; color: var(--label2); }
-.act.on .act-ico { color: var(--accent); }
-.act-lbl { font-size: 11px; font-weight: 500; color: var(--label2); }
-.act.on .act-lbl { color: var(--accent); }
-.notes-pill {
-  font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
-  background: var(--bg3); color: var(--label3);
+.cell{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(13px,3.6vw,18px);font-weight:600;
+  color:var(--label);cursor:pointer;user-select:none;
+  background:var(--grid-bg);
+  border-right:.5px solid var(--cell-sep);
+  border-bottom:.5px solid var(--cell-sep);
+  touch-action:manipulation;
+  transition:background .07s;
 }
-.notes-pill.on { background: var(--accent); color: var(--accent-fg); }
+/* Box dividers — thicker, clearly visible */
+.cell:nth-child(3n):not(:nth-child(9n)){border-right:1.5px solid var(--box-sep);}
+.cell:nth-child(9n){border-right:none;}
+.cell[data-r="2"],.cell[data-r="5"]{border-bottom:1.5px solid var(--box-sep);}
+.cell[data-r="8"]{border-bottom:none;}
+/* States */
+.cell.sel{background:var(--sel)!important;}
+.cell.cage-hi{background:var(--sel2);}
+.cell.row-hi{background:var(--hi);}
+.cell.same-num{background:rgba(48,209,88,.06);}
+.cell.err{color:var(--red);}
+.cell.ok{color:var(--accent);}
+/* Notes */
+.ng{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;}
+.nn{display:flex;align-items:center;justify-content:center;font-size:clamp(4px,.9vw,7px);color:var(--label3);font-weight:400;}
 
-/* Numpad */
-.game-numpad {
-  display: grid; grid-template-columns: repeat(9,1fr);
-  gap: 5px; padding: 6px 12px calc(env(safe-area-inset-bottom,0px) + 12px);
-}
-.nk {
-  aspect-ratio: .68; display: flex; align-items: center; justify-content: center;
-  font-size: clamp(18px,5.5vw,28px); font-weight: 700;
-  background: var(--bg1); border-radius: var(--r-sm);
-  color: var(--num-color); cursor: pointer; touch-action: manipulation;
-  transition: background .08s, transform .08s;
-}
-.nk:active { background: var(--bg2); transform: scale(.92); }
+/* SVG cage overlay — absolutely positioned over grid */
+#g-svg{position:absolute;pointer-events:none;z-index:2;}
 
-/* Generating msg */
-.gen-msg {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 14px;
+/* Pause / Game-over overlay */
+#g-ov{
+  display:none;position:absolute;inset:0;z-index:30;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(16px) saturate(1.8);
+  -webkit-backdrop-filter:blur(16px) saturate(1.8);
+  align-items:center;justify-content:center;flex-direction:column;gap:10px;
+  border-radius:4px;
 }
-.gen-spinner {
-  width: 32px; height: 32px; border: 3px solid var(--sep);
-  border-top-color: var(--accent); border-radius: 50%;
-  animation: spin .7s linear infinite;
+#g-ov.show{display:flex;}
+.ov-ico{font-size:44px;margin-bottom:4px;}
+.ov-title{font-size:22px;font-weight:700;color:var(--label);}
+.ov-sub{font-size:15px;color:var(--label2);text-align:center;padding:0 20px;}
+.ov-btns{display:flex;gap:10px;margin-top:12px;}
+.ov-btn{
+  padding:12px 24px;font-size:16px;font-weight:600;
+  background:var(--accent);color:var(--acc-fg);
+  border:none;border-radius:12px;cursor:pointer;font-family:inherit;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.gen-txt { font-size: 15px; color: var(--label2); }
+.ov-btn.ghost{background:rgba(255,255,255,.13);color:#fff;}
 
-/* ══════════════════════════════════════════════════════════════
-   WIN SCREEN
-══════════════════════════════════════════════════════════════ */
-#s-win {
-  background: var(--bg); align-items: center; justify-content: flex-start;
-  padding: calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 20px);
-  overflow-y: auto;
+/* Actions */
+.gacts{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:7px;padding:0 14px 7px;
 }
-.win-wrap { width: 100%; max-width: 390px; margin: 0 auto; }
+.act{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:10px 0;
+  background:var(--bg1);border-radius:var(--r-sm);
+  cursor:pointer;transition:background .1s;
+  border:none;
+}
+.act:active{background:var(--bg2);}
+.act.on{background:rgba(48,209,88,.13);}
+/* Icon as SVG-style text — clean, no emoji rendering issues */
+.act-ico{font-size:19px;color:var(--label2);line-height:1;}
+.act.on .act-ico{color:var(--accent);}
+.act-lbl{font-size:11px;font-weight:500;color:var(--label2);letter-spacing:.1px;}
+.act.on .act-lbl{color:var(--accent);}
+.notes-tog{
+  font-size:9px;font-weight:700;letter-spacing:.4px;
+  padding:2px 6px;border-radius:4px;
+  background:var(--bg3);color:var(--label3);
+}
+.notes-tog.on{background:var(--accent);color:var(--acc-fg);}
 
-.win-hero { text-align: center; margin-bottom: 20px; padding-top: 8px; }
-.win-hero-icon { font-size: 52px; margin-bottom: 10px; }
-.win-hero-title { font-size: 28px; font-weight: 700; letter-spacing: -.4px; color: var(--label); }
-.win-hero-sub { font-size: 15px; color: var(--label2); margin-top: 4px; }
+/* Numpad — flat, no border, no shadow */
+.gnumpad{
+  display:grid;grid-template-columns:repeat(9,1fr);
+  gap:5px;
+  padding:0 14px calc(env(safe-area-inset-bottom,0px)+14px);
+}
+.nk{
+  aspect-ratio:.65;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(18px,5.2vw,26px);font-weight:700;
+  background:var(--bg1);border-radius:var(--r-sm);
+  color:var(--accent);cursor:pointer;touch-action:manipulation;
+  border:none;outline:none;
+  transition:background .07s,transform .07s;
+}
+.nk:active{background:var(--bg2);transform:scale(.91);}
 
-/* Percentile big card */
-.win-pct-card {
-  background: var(--bg1); border-radius: var(--r);
-  padding: 20px; text-align: center; margin-bottom: 10px;
-}
-.win-pct { font-size: 64px; font-weight: 700; line-height: 1; letter-spacing: -2px; }
-.win-pct.real { color: var(--accent); }
-.win-pct.sim  { color: var(--blue); }
-.win-pct-lbl { font-size: 14px; color: var(--label2); margin-top: 6px; }
+/* Gen spinner */
+.gen-wrap{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.gen-spin{width:28px;height:28px;border:2.5px solid var(--bg2);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.gen-lbl{font-size:15px;color:var(--label2);}
 
-/* Stat grids */
-.win-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 8px; }
-.win-grid2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 8px; }
-.wc {
-  background: var(--bg1); border-radius: var(--r-sm);
-  padding: 12px 8px; text-align: center;
+/* ═══════════════════════════════════════════════════
+   WIN
+═══════════════════════════════════════════════════ */
+#s-win{
+  background:var(--bg);
+  padding:calc(env(safe-area-inset-top,0px)+20px) 16px
+          calc(env(safe-area-inset-bottom,0px)+20px);
+  overflow-y:auto;
 }
-.wc-lbl { font-size: 11px; font-weight: 500; color: var(--label3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
-.wc-val { font-size: 17px; font-weight: 600; color: var(--label); font-variant-numeric: tabular-nums; }
-.wc-val.good { color: var(--accent); }
-.wc-val.bad  { color: var(--red); }
-.wc-sub { font-size: 11px; color: var(--accent); min-height: 14px; margin-top: 2px; }
+.win-inner{max-width:390px;margin:0 auto;}
 
-.win-section-title {
-  font-size: 13px; font-weight: 600; color: var(--label2);
-  text-transform: uppercase; letter-spacing: .6px;
-  margin: 16px 0 8px 4px;
-}
-.win-counts {
-  background: var(--bg1); border-radius: var(--r-sm);
-  display: grid; grid-template-columns: repeat(3,1fr);
-  overflow: hidden; margin-bottom: 16px;
-}
-.win-count-item { padding: 12px 8px; text-align: center; }
-.win-count-item + .win-count-item { border-left: .5px solid var(--sep); }
+/* Hero */
+.win-hero{text-align:center;padding:8px 0 24px;}
+.win-hero-ico{font-size:56px;margin-bottom:10px;}
+.win-hero-h{font-size:30px;font-weight:700;letter-spacing:-.4px;}
+.win-hero-s{font-size:15px;color:var(--label2);margin-top:5px;}
 
-.win-actions { display: flex; gap: 10px; }
-.win-play {
-  flex: 1; padding: 16px; font-size: 17px; font-weight: 600;
-  background: var(--accent); color: var(--accent-fg);
-  border: none; border-radius: var(--r); cursor: pointer; font-family: inherit;
+/* Big percentile */
+.win-pct-wrap{
+  background:var(--bg1);border-radius:var(--r);
+  padding:22px 20px;text-align:center;margin-bottom:8px;
 }
-.win-play:active { opacity: .8; }
-.win-change {
-  padding: 16px 18px; font-size: 15px; font-weight: 500;
-  background: var(--bg1); color: var(--label2);
-  border: none; border-radius: var(--r); cursor: pointer; font-family: inherit;
+.win-pct{font-size:68px;font-weight:700;line-height:1;letter-spacing:-3px;}
+.win-pct.real{color:var(--accent);}
+.win-pct.sim{color:var(--blue);}
+.win-pct-lbl{font-size:14px;color:var(--label2);margin-top:5px;}
+
+/* Stat cards */
+.wgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:7px;}
+.wgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:7px;}
+.wcard{background:var(--bg1);border-radius:var(--r-sm);padding:12px 8px;text-align:center;}
+.wc-lbl{font-size:11px;font-weight:500;color:var(--label3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+.wc-val{font-size:18px;font-weight:600;color:var(--label);font-variant-numeric:tabular-nums;}
+.wc-val.good{color:var(--accent);}
+.wc-val.bad{color:var(--red);}
+.wc-sub{font-size:10px;color:var(--accent);min-height:13px;margin-top:2px;}
+
+.win-sec-lbl{
+  font-size:13px;font-weight:500;color:var(--label2);
+  padding:12px 4px 6px;letter-spacing:.1px;
 }
-.win-change:active { opacity: .7; }
+/* Bottom count row — inset list style */
+.win-counts{background:var(--bg1);border-radius:var(--r-sm);overflow:hidden;margin-bottom:16px;}
+.wcount-row{display:flex;border-top:.5px solid var(--sep);}
+.wcount-row:first-child{border-top:none;}
+.wcell{flex:1;padding:11px 8px;text-align:center;border-left:.5px solid var(--sep);}
+.wcell:first-child{border-left:none;}
+
+/* Buttons */
+.win-actions{display:flex;gap:8px;}
+.win-main{
+  flex:1;padding:15px;font-size:17px;font-weight:600;
+  background:var(--accent);color:var(--acc-fg);
+  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;
+}
+.win-main:active{opacity:.8;}
+.win-alt{
+  padding:15px 18px;font-size:15px;font-weight:500;
+  background:var(--bg1);color:var(--label2);
+  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;
+}
+.win-alt:active{opacity:.7;}
 </style>
 </head>
 <body>
 
-<!-- ══ AUTH ════════════════════════════════════════════════ -->
-<div id="s-auth" class="screen active">
- <div class="auth-scroll">
-
-  <div class="auth-logo">
-   <div class="auth-logo-icon">♟</div>
-   <h1>Killer Sudoku</h1>
-   <p>The puzzle that thinks back</p>
-  </div>
+<!-- ════ AUTH ══════════════════════════════════════════ -->
+<div id="s-auth" class="scr active">
+ <div class="auth-inner">
+  <div class="auth-icon">♟</div>
+  <h1 class="auth-h1">Killer Sudoku</h1>
+  <p class="auth-sub">The puzzle that thinks back</p>
 
   <!-- Register -->
   <div id="reg-section">
-   <p class="auth-card-title">Create Account</p>
-   <div class="auth-card">
-    <div class="auth-row-item">
-     <div class="auth-row-label">Username</div>
-     <input id="reg-uname" class="auth-row-input" type="text" placeholder="e.g. GoldenFox" maxlength="20" autocomplete="username" oninput="onUInput()">
-     <button class="auth-row-check" onclick="checkUname()">Check</button>
+   <div class="ilist-hdr">Create Account</div>
+   <div class="ilist">
+    <div class="irow">
+     <div class="irow-lbl">Username</div>
+     <input id="reg-uname" class="irow-inp" type="text" placeholder="e.g. GoldenFox" maxlength="20" autocomplete="username" oninput="onUInput()">
+     <button class="irow-btn" onclick="checkUname()">Check</button>
     </div>
-    <div class="uname-hint info" id="uname-hint">3–20 chars, letters & numbers</div>
-    <div class="auth-row-item" style="border-top:.5px solid var(--sep);">
-     <div class="auth-row-label">Passcode</div>
-     <input id="reg-pass" class="auth-row-input passcode-field" style="flex:1;padding:0;font-size:22px;letter-spacing:6px;text-align:left;" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="new-password" oninput="onPassInput('reg')">
+    <div class="irow" style="border-top:.5px solid var(--sep);">
+     <div class="irow-lbl">Passcode</div>
+     <input id="reg-pass" class="irow-inp pass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="new-password" oninput="onPassInput('reg')">
     </div>
-    <div class="passcode-hint">6 digits · numbers only</div>
    </div>
-   <button class="auth-action" id="reg-btn" onclick="doReg()" disabled>Create Account</button>
-   <div class="auth-link-row">Already have an account? <span class="auth-link" onclick="showLogin()">Sign In</span></div>
-   <div id="reg-msg" style="text-align:center;font-size:13px;min-height:16px;color:var(--red);margin-top:4px;"></div>
+   <div class="ilist-foot" id="uname-hint">3–20 chars · letters, numbers, _</div>
+   <button class="auth-btn" id="reg-btn" onclick="doReg()" disabled>Create Account</button>
+   <div class="auth-lnk">Have an account? <span onclick="showLogin()">Sign In</span></div>
+   <div class="auth-err" id="reg-err"></div>
   </div>
 
-  <!-- Login (hidden) -->
+  <!-- Login -->
   <div id="login-section" style="display:none;">
-   <p class="auth-card-title">Sign In</p>
-   <div class="auth-card">
-    <div class="auth-row-item">
-     <div class="auth-row-label">Username</div>
-     <input id="login-uname" class="auth-row-input" type="text" placeholder="Your username" maxlength="20" autocomplete="username" oninput="updateLoginBtn()">
+   <div class="ilist-hdr">Sign In</div>
+   <div class="ilist">
+    <div class="irow">
+     <div class="irow-lbl">Username</div>
+     <input id="login-uname" class="irow-inp" type="text" placeholder="Your username" maxlength="20" autocomplete="username" oninput="updateLoginBtn()">
     </div>
-    <div class="auth-row-item" style="border-top:.5px solid var(--sep);">
-     <div class="auth-row-label">Passcode</div>
-     <input id="login-pass" class="auth-row-input" style="font-size:22px;letter-spacing:6px;" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="current-password" oninput="onPassInput('login')">
+    <div class="irow" style="border-top:.5px solid var(--sep);">
+     <div class="irow-lbl">Passcode</div>
+     <input id="login-pass" class="irow-inp pass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="current-password" oninput="onPassInput('login')">
     </div>
    </div>
-   <button class="auth-action" id="login-btn" onclick="doLogin()" disabled>Sign In</button>
-   <div class="auth-link-row">New here? <span class="auth-link" onclick="showReg()">Create Account</span></div>
-   <div id="login-msg" style="text-align:center;font-size:13px;min-height:16px;color:var(--red);margin-top:4px;"></div>
+   <div style="height:8px;"></div>
+   <button class="auth-btn" id="login-btn" onclick="doLogin()" disabled>Sign In</button>
+   <div class="auth-lnk">New here? <span onclick="showReg()">Create Account</span></div>
+   <div class="auth-err" id="login-err"></div>
   </div>
 
   <!-- Guest -->
-  <div class="guest-section">
-   <div class="guest-sep">
-    <div class="guest-sep-line"></div>
-    <div class="guest-sep-text">or</div>
-    <div class="guest-sep-line"></div>
-   </div>
-   <button class="guest-btn" onclick="skipAuth()">Continue as Guest</button>
-   <p style="font-size:12px;color:var(--label3);text-align:center;margin-top:8px;">Stats saved on this device only</p>
-  </div>
-
+  <div class="auth-or"><div class="auth-or-line"></div><div class="auth-or-txt">or</div><div class="auth-or-line"></div></div>
+  <button class="auth-btn ghost" onclick="skipAuth()">Continue as Guest</button>
+  <p style="font-size:12px;color:var(--label3);text-align:center;margin-top:8px;">Stats saved on this device only</p>
  </div>
 </div>
 
-<!-- ══ HOME ════════════════════════════════════════════════ -->
-<div id="s-home" class="screen">
- <div class="home-nav">
-  <div class="home-nav-user">
-   <div class="home-nav-av" id="home-av">?</div>
-   <div class="home-nav-name" id="home-name">Guest</div>
+<!-- ════ HOME ══════════════════════════════════════════ -->
+<div id="s-home" class="scr">
+ <div class="home-top">
+  <div class="home-user">
+   <div class="home-av" id="home-av">?</div>
+   <div class="home-name" id="home-name">Guest</div>
   </div>
-  <div class="home-nav-signout" onclick="doSignOut()">Sign Out</div>
+  <div class="home-out" onclick="doSignOut()">Sign Out</div>
  </div>
-
  <div class="home-hero">
-  <div class="home-hero-icon">♟</div>
-  <div class="home-hero-title">Killer Sudoku</div>
-  <div class="home-hero-sub">Choose your difficulty</div>
+  <div class="home-hero-ico">♟</div>
+  <div class="home-hero-h">Killer Sudoku</div>
+  <div class="home-hero-s">Choose your difficulty</div>
  </div>
-
- <p class="home-section-title">Difficulties</p>
- <div class="diff-group">
-  <div class="diff-row" onclick="startGame('easy')">
-   <div class="diff-dot" style="background:#30d158;"></div>
-   <div class="diff-row-name">Easy</div>
-   <div class="diff-row-sub">Cages up to 5</div>
-   <div class="diff-chevron">›</div>
+ <div class="home-sec-lbl">Difficulties</div>
+ <div class="diff-list">
+  <div class="diff-item" onclick="startGame('easy')">
+   <div class="diff-pip" style="background:#30d158;"></div>
+   <div class="diff-name">Easy</div>
+   <div class="diff-hint">Cages up to 5</div>
+   <div class="diff-chev">›</div>
   </div>
-  <div class="diff-row" onclick="startGame('medium')">
-   <div class="diff-dot" style="background:#ffd60a;"></div>
-   <div class="diff-row-name">Medium</div>
-   <div class="diff-row-sub">Cages up to 4</div>
-   <div class="diff-chevron">›</div>
+  <div class="diff-item" onclick="startGame('medium')">
+   <div class="diff-pip" style="background:#ffd60a;"></div>
+   <div class="diff-name">Medium</div>
+   <div class="diff-hint">Cages up to 4</div>
+   <div class="diff-chev">›</div>
   </div>
-  <div class="diff-row" onclick="startGame('hard')">
-   <div class="diff-dot" style="background:#ff9f0a;"></div>
-   <div class="diff-row-name">Hard</div>
-   <div class="diff-row-sub">Cages up to 3</div>
-   <div class="diff-chevron">›</div>
+  <div class="diff-item" onclick="startGame('hard')">
+   <div class="diff-pip" style="background:#ff9f0a;"></div>
+   <div class="diff-name">Hard</div>
+   <div class="diff-hint">Cages up to 3</div>
+   <div class="diff-chev">›</div>
   </div>
-  <div class="diff-row" onclick="startGame('expert')">
-   <div class="diff-dot" style="background:#ff6b35;"></div>
-   <div class="diff-row-name">Expert</div>
-   <div class="diff-row-sub">Tight constraints</div>
-   <div class="diff-chevron">›</div>
+  <div class="diff-item" onclick="startGame('expert')">
+   <div class="diff-pip" style="background:#ff6b35;"></div>
+   <div class="diff-name">Expert</div>
+   <div class="diff-hint">Tight constraints</div>
+   <div class="diff-chev">›</div>
   </div>
-  <div class="diff-row" onclick="startGame('extreme')">
-   <div class="diff-dot" style="background:#ff453a;"></div>
-   <div class="diff-row-name">Extreme</div>
-   <div class="diff-row-sub">Pairs only · brutal</div>
-   <div class="diff-chevron">›</div>
+  <div class="diff-item" onclick="startGame('extreme')">
+   <div class="diff-pip" style="background:#ff453a;"></div>
+   <div class="diff-name">Extreme</div>
+   <div class="diff-hint">Pairs only</div>
+   <div class="diff-chev">›</div>
   </div>
  </div>
-
- <div class="daily-btn" onclick="startDailyGame()">
-  <div class="daily-btn-icon">📅</div>
-  <div class="daily-btn-text">
-   <div class="daily-btn-label">Daily Challenge</div>
-   <div class="daily-btn-sub" id="daily-date">Today's puzzle</div>
+ <div class="daily-row" onclick="startDailyGame()">
+  <div class="daily-ico">📅</div>
+  <div class="daily-txt">
+   <div class="daily-lbl">Daily Challenge</div>
+   <div class="daily-sub" id="daily-date">Today's puzzle</div>
   </div>
-  <div class="daily-btn-arrow">›</div>
+  <div class="daily-chev">›</div>
  </div>
 </div>
 
-<!-- ══ GAME ════════════════════════════════════════════════ -->
-<div id="s-game" class="screen">
- <div class="game-nav">
-  <div class="game-back" onclick="goHome()">‹</div>
-  <div class="game-nav-title">
-   <h2>Killer Sudoku</h2>
-   <p id="g-diff-label">Easy</p>
+<!-- ════ GAME ══════════════════════════════════════════ -->
+<div id="s-game" class="scr">
+ <!-- Nav -->
+ <div class="gnav">
+  <div class="gnav-back" onclick="goHome()">‹</div>
+  <div class="gnav-center">
+   <div class="gnav-title">Killer Sudoku</div>
+   <div class="gnav-sub" id="g-diff-lbl">Easy</div>
   </div>
-  <div class="game-pause" id="pause-btn" onclick="togglePause()">⏸</div>
+  <div class="gnav-pause" id="pause-btn" onclick="togglePause()">
+   <div class="gnav-pause-ico" id="pause-ico">⏸</div>
+  </div>
  </div>
 
- <div class="game-stats">
-  <div class="gstat"><div class="gstat-lbl">Difficulty</div><div class="gstat-val" id="g-diff">Easy</div></div>
-  <div class="gstat"><div class="gstat-lbl">Mistakes</div><div class="gstat-val" id="g-mis">0/3</div></div>
-  <div class="gstat"><div class="gstat-lbl">Score</div><div class="gstat-val" id="g-score">0</div></div>
-  <div class="gstat"><div class="gstat-lbl">Time</div><div class="gstat-val" id="g-time">00:00</div></div>
+ <!-- Stats -->
+ <div class="gstats">
+  <div class="gs"><div class="gs-lbl">Difficulty</div><div class="gs-val" id="g-diff">Easy</div></div>
+  <div class="gs"><div class="gs-lbl">Mistakes</div><div class="gs-val" id="g-mis">0/3</div></div>
+  <div class="gs"><div class="gs-lbl">Score</div><div class="gs-val" id="g-score">0</div></div>
+  <div class="gs"><div class="gs-lbl">Time</div><div class="gs-val" id="g-time">00:00</div></div>
  </div>
 
- <div class="game-board-wrap" id="board-wrap">
-  <!-- grid and svg injected here -->
+ <!-- Board -->
+ <div class="board-outer" id="board-outer">
   <div id="g-grid"></div>
   <svg id="g-svg"></svg>
-  <div id="pause-ov">
-   <div style="font-size:40px;">⏸</div>
-   <div class="pause-lbl">Paused</div>
-   <button class="pause-resume" onclick="togglePause()">Resume</button>
+  <div id="g-ov">
+   <div class="ov-ico" id="ov-ico">⏸</div>
+   <div class="ov-title" id="ov-title">Paused</div>
+   <div class="ov-sub" id="ov-sub"></div>
+   <div class="ov-btns" id="ov-btns">
+    <button class="ov-btn" onclick="togglePause()">Resume</button>
+   </div>
   </div>
  </div>
 
- <div class="game-actions">
-  <div class="act" onclick="doUndo()"><div class="act-ico">↩</div><div class="act-lbl">Undo</div></div>
-  <div class="act" onclick="doErase()"><div class="act-ico">⌫</div><div class="act-lbl">Erase</div></div>
+ <!-- Gen state -->
+ <div class="gen-wrap" id="gen-wrap" style="display:none;">
+  <div class="gen-spin"></div>
+  <div class="gen-lbl">Crafting your puzzle…</div>
+ </div>
+
+ <!-- Actions -->
+ <div class="gacts" id="gacts">
+  <div class="act" onclick="doUndo()">
+   <div class="act-ico">↩</div>
+   <div class="act-lbl">Undo</div>
+  </div>
+  <div class="act" onclick="doErase()">
+   <div class="act-ico">⌫</div>
+   <div class="act-lbl">Erase</div>
+  </div>
   <div class="act" id="notes-act" onclick="toggleNotes()">
    <div class="act-ico">✎</div>
    <div class="act-lbl">Notes</div>
-   <div class="notes-pill" id="notes-pill">OFF</div>
+   <div class="notes-tog" id="notes-tog">OFF</div>
   </div>
-  <div class="act" onclick="useHint()"><div class="act-ico">💡</div><div class="act-lbl">Hint</div></div>
+  <div class="act" onclick="useHint()">
+   <div class="act-ico">💡</div>
+   <div class="act-lbl">Hint</div>
+  </div>
  </div>
 
- <div class="game-numpad" id="g-numpad"></div>
-
- <!-- Generating state -->
- <div class="gen-msg" id="gen-msg" style="display:none;">
-  <div class="gen-spinner"></div>
-  <div class="gen-txt">Crafting your puzzle…</div>
- </div>
+ <!-- Numpad -->
+ <div class="gnumpad" id="gnumpad"></div>
 </div>
 
-<!-- ══ WIN ═════════════════════════════════════════════════ -->
-<div id="s-win" class="screen">
- <div class="win-wrap">
+<!-- ════ WIN ════════════════════════════════════════════ -->
+<div id="s-win" class="scr">
+ <div class="win-inner">
   <div class="win-hero">
-   <div class="win-hero-icon">🏆</div>
-   <div class="win-hero-title">Puzzle Solved!</div>
-   <div class="win-hero-sub" id="win-sub">Easy · Well done</div>
+   <div class="win-hero-ico">🏆</div>
+   <div class="win-hero-h">Puzzle Solved!</div>
+   <div class="win-hero-s" id="win-sub">Well done</div>
   </div>
-
-  <div class="win-pct-card">
+  <div class="win-pct-wrap">
    <div class="win-pct" id="win-pct">…</div>
-   <div class="win-pct-lbl" id="win-pct-lbl">Calculating your percentile…</div>
+   <div class="win-pct-lbl" id="win-pct-lbl">Calculating percentile…</div>
   </div>
-
-  <div class="win-grid3">
-   <div class="wc"><div class="wc-lbl">Time</div><div class="wc-val" id="win-time">—</div></div>
-   <div class="wc"><div class="wc-lbl">Mistakes</div><div class="wc-val" id="win-mis">—</div></div>
-   <div class="wc"><div class="wc-lbl">vs Avg</div><div class="wc-val" id="win-vavg">—</div></div>
+  <div class="wgrid3">
+   <div class="wcard"><div class="wc-lbl">Time</div><div class="wc-val" id="win-time">—</div></div>
+   <div class="wcard"><div class="wc-lbl">Mistakes</div><div class="wc-val" id="win-mis">—</div></div>
+   <div class="wcard"><div class="wc-lbl">vs Avg</div><div class="wc-val" id="win-vavg">—</div></div>
   </div>
-
-  <div class="win-section-title">Your Stats</div>
-
-  <div class="win-grid2">
-   <div class="wc">
-    <div class="wc-lbl">Best Time</div>
-    <div class="wc-val" id="win-best">—</div>
-    <div class="wc-sub" id="win-best-sub"></div>
-   </div>
-   <div class="wc"><div class="wc-lbl">Avg Time</div><div class="wc-val" id="win-avg">—</div></div>
+  <div class="wgrid2">
+   <div class="wcard"><div class="wc-lbl">Best Time</div><div class="wc-val" id="win-best">—</div><div class="wc-sub" id="win-best-sub"></div></div>
+   <div class="wcard"><div class="wc-lbl">Avg Time</div><div class="wc-val" id="win-avg">—</div></div>
   </div>
-
+  <div class="win-sec-lbl" id="win-sec-lbl">Your Stats</div>
   <div class="win-counts">
-   <div class="win-count-item"><div class="wc-lbl">Win Rate</div><div class="wc-val" id="win-wr">—</div></div>
-   <div class="win-count-item"><div class="wc-lbl">Clean Wins</div><div class="wc-val" id="win-cw">—</div></div>
-   <div class="win-count-item"><div class="wc-lbl">Finished</div><div class="wc-val" id="win-fin">—</div></div>
+   <div class="wcount-row">
+    <div class="wcell"><div class="wc-lbl">Win Rate</div><div class="wc-val" id="win-wr">—</div></div>
+    <div class="wcell"><div class="wc-lbl">Clean Wins</div><div class="wc-val" id="win-cw">—</div></div>
+    <div class="wcell"><div class="wc-lbl">Finished</div><div class="wc-val" id="win-fin">—</div></div>
+   </div>
   </div>
-
   <div class="win-actions">
-   <button class="win-play" onclick="playAgain()">Play Again</button>
-   <button class="win-change" onclick="goHome()">Change</button>
+   <button class="win-main" onclick="playAgain()">Play Again</button>
+   <button class="win-alt" onclick="goHome()">Change</button>
   </div>
  </div>
 </div>
 
-<!-- ══ SCRIPT ══════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 'use strict';
-// ── Config ───────────────────────────────────────────────────
-const SB_URL = 'https://pdetqrprchbbwghsbcap.supabase.co';
-const SB_KEY = 'sb_publishable_TzFzkQG1txNJkSNwVxl0Ng_ROpMV0A0';
-const sb = window.supabase.createClient(SB_URL, SB_KEY);
+const SB_URL='https://pdetqrprchbbwghsbcap.supabase.co';
+const SB_KEY='sb_publishable_TzFzkQG1txNJkSNwVxl0Ng_ROpMV0A0';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
 
 // ── State ────────────────────────────────────────────────────
-let user = null;
-let sol, board, notes, cages, cageId;
-let sel = null, mis = 0, score = 0, hist = [];
-let noteMode = false, cDiff = 'easy', lastDaily = false;
-let paused = false, tInt = null, secs = 0, hints = 1, connected = false;
-let unameOk = null;
-const fmt = s => String(~~(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+let user=null,sol,board,notes,cages,cageId;
+let sel=null,mis=0,score=0,hist=[];
+let noteMode=false,cDiff='easy',lastDaily=false;
+let paused=false,gameOver=false,tInt=null,secs=0,hints=1,connected=false;
+let unameOk=null;
+const fmt=s=>String(~~(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 
 // ── Stats ────────────────────────────────────────────────────
-const dstat = () => ({ started:0, finished:0, noMistakes:0, totalSecs:0, bestSecs:0 });
-let pStats = { easy:dstat(), medium:dstat(), hard:dstat(), expert:dstat(), extreme:dstat(), daily:dstat() };
+const ds=()=>({started:0,finished:0,noMistakes:0,totalSecs:0,bestSecs:0});
+let pStats={easy:ds(),medium:ds(),hard:ds(),expert:ds(),extreme:ds(),daily:ds()};
+function loadLS(){try{const d=localStorage.getItem('ks4');if(d){const p=JSON.parse(d);for(const k of Object.keys(pStats))if(p[k])pStats[k]={...ds(),...p[k]};}}catch(e){}}
+function saveLS(){try{localStorage.setItem('ks4',JSON.stringify(pStats));}catch(e){}}
+async function loadRemote(){
+  if(!user)return;
+  try{const{data}=await sb.from('user_stats').select('*').eq('user_id',user.id);
+  if(data?.length)for(const r of data){const k=r.difficulty;if(!pStats[k])continue;const l=pStats[k];pStats[k]={finished:Math.max(l.finished,r.finished),noMistakes:Math.max(l.noMistakes,r.no_mistakes),started:Math.max(l.started,r.started),totalSecs:l.finished>=r.finished?l.totalSecs:r.total_secs,bestSecs:l.bestSecs>0&&r.best_secs>0?Math.min(l.bestSecs,r.best_secs):(l.bestSecs||r.best_secs)};}
+  saveLS();for(const d of Object.keys(pStats))if(pStats[d].finished>0||pStats[d].started>0)await upsert(d);}catch(e){}
+}
+async function upsert(diff){
+  if(!user)return;const d=pStats[diff];
+  try{await sb.from('user_stats').upsert({user_id:user.id,difficulty:diff,finished:d.finished,no_mistakes:d.noMistakes,total_secs:d.totalSecs,best_secs:d.bestSecs,started:d.started,updated_at:new Date().toISOString()},{onConflict:'user_id,difficulty'});}catch(e){}
+}
+async function saveSt(diff){saveLS();if(diff)await upsert(diff);}
 
-function loadLS() {
-  try { const d = localStorage.getItem('ks3_stats'); if (d) { const p = JSON.parse(d); for (const k of Object.keys(pStats)) if (p[k]) pStats[k] = { ...dstat(), ...p[k] }; } } catch(e) {}
-}
-function saveLS() { try { localStorage.setItem('ks3_stats', JSON.stringify(pStats)); } catch(e) {} }
-async function loadRemote() {
-  if (!user) return;
-  try {
-    const { data } = await sb.from('user_stats').select('*').eq('user_id', user.id);
-    if (data?.length) {
-      for (const row of data) {
-        const k = row.difficulty; if (!pStats[k]) continue;
-        const l = pStats[k];
-        pStats[k] = { finished: Math.max(l.finished, row.finished), noMistakes: Math.max(l.noMistakes, row.no_mistakes), started: Math.max(l.started, row.started), totalSecs: l.finished >= row.finished ? l.totalSecs : row.total_secs, bestSecs: l.bestSecs>0&&row.best_secs>0 ? Math.min(l.bestSecs,row.best_secs) : (l.bestSecs||row.best_secs) };
-      }
-      saveLS();
-    }
-    for (const d of Object.keys(pStats)) if (pStats[d].finished>0||pStats[d].started>0) await upsertStat(d);
-  } catch(e) {}
-}
-async function upsertStat(diff) {
-  if (!user) return;
-  const d = pStats[diff];
-  try { await sb.from('user_stats').upsert({ user_id:user.id, difficulty:diff, finished:d.finished, no_mistakes:d.noMistakes, total_secs:d.totalSecs, best_secs:d.bestSecs, started:d.started, updated_at:new Date().toISOString() }, { onConflict:'user_id,difficulty' }); } catch(e) {}
-}
-async function saveSt(diff) { saveLS(); if (diff) await upsertStat(diff); }
-
-// ── Auth helpers ─────────────────────────────────────────────
-async function hashCode(code) {
-  const buf = new TextEncoder().encode(code + 'ks_v3_2025');
-  const h = await crypto.subtle.digest('SHA-256', buf);
-  return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-function onPassInput(which) {
-  const el = document.getElementById(which==='reg' ? 'reg-pass' : 'login-pass');
-  el.value = el.value.replace(/\D/g,'').slice(0,6);
-  which==='reg' ? updateRegBtn() : updateLoginBtn();
-}
-function onUInput() { unameOk = null; document.getElementById('uname-hint').textContent = '3–20 chars, letters & numbers'; document.getElementById('uname-hint').className = 'uname-hint info'; updateRegBtn(); }
-function updateRegBtn() { const u=document.getElementById('reg-uname').value.trim(), p=document.getElementById('reg-pass').value; document.getElementById('reg-btn').disabled = !(u.length>=3 && p.length===6 && unameOk===true); }
-function updateLoginBtn() { const u=document.getElementById('login-uname').value.trim(), p=document.getElementById('login-pass').value; document.getElementById('login-btn').disabled = !(u.length>=2 && p.length===6); }
-
-async function checkUname() {
-  const u = document.getElementById('reg-uname').value.trim();
-  const hint = document.getElementById('uname-hint');
-  if (u.length < 3) { hint.textContent='At least 3 characters'; hint.className='uname-hint err'; return; }
-  if (!/^[a-zA-Z0-9_]+$/.test(u)) { hint.textContent='Letters, numbers & _ only'; hint.className='uname-hint err'; return; }
-  hint.textContent='Checking…'; hint.className='uname-hint info';
-  try {
-    const { data } = await sb.from('players').select('username').eq('username',u).maybeSingle();
-    if (data) { unameOk=false; hint.textContent=u+' is already taken'; hint.className='uname-hint err'; }
-    else { unameOk=true; hint.textContent=u+' is available!'; hint.className='uname-hint ok'; }
-  } catch(e) { unameOk=true; hint.textContent='Available (offline check)'; hint.className='uname-hint ok'; }
+// ── Auth ─────────────────────────────────────────────────────
+async function hashCode(c){const b=new TextEncoder().encode(c+'ks_v4_2025');const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function onPassInput(w){const el=document.getElementById(w==='reg'?'reg-pass':'login-pass');el.value=el.value.replace(/\D/g,'').slice(0,6);w==='reg'?updateRegBtn():updateLoginBtn();}
+function onUInput(){unameOk=null;setHint('3–20 chars · letters, numbers, _','');updateRegBtn();}
+function setHint(txt,cls){const el=document.getElementById('uname-hint');el.textContent=txt;el.className='ilist-foot'+(cls?' '+cls:'');}
+function updateRegBtn(){const u=document.getElementById('reg-uname').value.trim(),p=document.getElementById('reg-pass').value;document.getElementById('reg-btn').disabled=!(u.length>=3&&p.length===6&&unameOk===true);}
+function updateLoginBtn(){const u=document.getElementById('login-uname').value.trim(),p=document.getElementById('login-pass').value;document.getElementById('login-btn').disabled=!(u.length>=2&&p.length===6);}
+async function checkUname(){
+  const u=document.getElementById('reg-uname').value.trim();
+  if(u.length<3){setHint('At least 3 characters','err');return;}
+  if(!/^[a-zA-Z0-9_]+$/.test(u)){setHint('Letters, numbers & _ only','err');return;}
+  setHint('Checking…','');
+  try{const{data}=await sb.from('players').select('username').eq('username',u).maybeSingle();
+  if(data){unameOk=false;setHint(u+' is already taken','err');}else{unameOk=true;setHint(u+' is available ✓','ok');}
+  }catch(e){unameOk=true;setHint('Available (offline check)','ok');}
   updateRegBtn();
 }
-
-async function doReg() {
-  const u=document.getElementById('reg-uname').value.trim(), code=document.getElementById('reg-pass').value;
-  if (!u||code.length!==6) return;
-  const btn=document.getElementById('reg-btn'); btn.disabled=true; btn.textContent='Creating…';
-  try {
-    const hash = await hashCode(code);
-    const { data, error } = await sb.from('players').insert({ username:u, passcode_hash:hash }).select().single();
-    if (error) throw error;
-    user = { id:data.id, username:data.username };
-    localStorage.setItem('ks3_user', JSON.stringify(user));
-    enterHome();
-  } catch(e) {
-    document.getElementById('reg-msg').textContent = e.message||'Could not create account';
-    btn.disabled=false; btn.textContent='Create Account';
-  }
+async function doReg(){
+  const u=document.getElementById('reg-uname').value.trim(),c=document.getElementById('reg-pass').value;
+  if(!u||c.length!==6)return;
+  const btn=document.getElementById('reg-btn');btn.disabled=true;btn.textContent='Creating…';
+  try{const h=await hashCode(c);const{data,error}=await sb.from('players').insert({username:u,passcode_hash:h}).select().single();
+  if(error)throw error;user={id:data.id,username:data.username};localStorage.setItem('ks4_u',JSON.stringify(user));enterHome();}
+  catch(e){document.getElementById('reg-err').textContent=e.message||'Could not create account';btn.disabled=false;btn.textContent='Create Account';}
 }
-async function doLogin() {
-  const u=document.getElementById('login-uname').value.trim(), code=document.getElementById('login-pass').value;
-  if (!u||code.length!==6) return;
-  const btn=document.getElementById('login-btn'); btn.disabled=true; btn.textContent='Signing in…';
-  try {
-    const hash = await hashCode(code);
-    const { data } = await sb.from('players').select('*').eq('username',u).eq('passcode_hash',hash).maybeSingle();
-    if (!data) throw new Error('Wrong username or passcode');
-    user = { id:data.id, username:data.username };
-    localStorage.setItem('ks3_user', JSON.stringify(user));
-    await loadRemote(); enterHome();
-  } catch(e) {
-    document.getElementById('login-msg').textContent = e.message;
-    btn.disabled=false; btn.textContent='Sign In';
-  }
+async function doLogin(){
+  const u=document.getElementById('login-uname').value.trim(),c=document.getElementById('login-pass').value;
+  if(!u||c.length!==6)return;
+  const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Signing in…';
+  try{const h=await hashCode(c);const{data}=await sb.from('players').select('*').eq('username',u).eq('passcode_hash',h).maybeSingle();
+  if(!data)throw new Error('Wrong username or passcode');user={id:data.id,username:data.username};localStorage.setItem('ks4_u',JSON.stringify(user));await loadRemote();enterHome();}
+  catch(e){document.getElementById('login-err').textContent=e.message;btn.disabled=false;btn.textContent='Sign In';}
 }
-function skipAuth() { user=null; localStorage.removeItem('ks3_user'); enterHome(); }
-function doSignOut() { user=null; localStorage.removeItem('ks3_user'); showScreen('s-auth'); }
-function showLogin() { document.getElementById('reg-section').style.display='none'; document.getElementById('login-section').style.display=''; setTimeout(()=>document.getElementById('login-uname').focus(),80); }
-function showReg() { document.getElementById('login-section').style.display='none'; document.getElementById('reg-section').style.display=''; }
-
-async function tryAutoLogin() {
-  try { const s=localStorage.getItem('ks3_user'); if(s){user=JSON.parse(s);await loadRemote();enterHome();return;} } catch(e){}
-  showScreen('s-auth');
-}
+function skipAuth(){user=null;localStorage.removeItem('ks4_u');enterHome();}
+function doSignOut(){user=null;localStorage.removeItem('ks4_u');showScr('s-auth');}
+function showLogin(){document.getElementById('reg-section').style.display='none';document.getElementById('login-section').style.display='';setTimeout(()=>document.getElementById('login-uname').focus(),80);}
+function showReg(){document.getElementById('login-section').style.display='none';document.getElementById('reg-section').style.display='';}
+async function tryAutoLogin(){try{const s=localStorage.getItem('ks4_u');if(s){user=JSON.parse(s);await loadRemote();enterHome();return;}}catch(e){}showScr('s-auth');}
 
 // ── Navigation ───────────────────────────────────────────────
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function enterHome() {
-  loadLS();
-  document.getElementById('home-name').textContent = user ? user.username : 'Guest';
-  document.getElementById('home-av').textContent = user ? user.username.charAt(0).toUpperCase() : '?';
-  const d=new Date(); document.getElementById('daily-date').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  showScreen('s-home');
-}
-function goHome() { clearInterval(tInt); tInt=null; paused=false; document.getElementById('pause-ov').classList.remove('show'); showScreen('s-home'); }
+function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function enterHome(){loadLS();document.getElementById('home-name').textContent=user?user.username:'Guest';document.getElementById('home-av').textContent=user?user.username[0].toUpperCase():'?';const d=new Date();document.getElementById('daily-date').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});showScr('s-home');}
+function goHome(){clearInterval(tInt);tInt=null;paused=false;gameOver=false;document.getElementById('g-ov').classList.remove('show');showScr('s-home');}
 
 // ── Backend ──────────────────────────────────────────────────
-async function testBackend() {
-  try { const r=await fetch(`${SB_URL}/rest/v1/solve_times?select=id&limit=1`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}}); connected=r.ok||r.status===406; } catch(e){}
-}
-async function recordSolve(diff,seconds,mistakes) {
-  if (!connected) return null;
-  try {
+async function testBackend(){try{const r=await fetch(`${SB_URL}/rest/v1/solve_times?select=id&limit=1`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});connected=r.ok||r.status===406;}catch(e){}}
+async function recordSolve(diff,seconds,mistakes){
+  if(!connected)return null;
+  try{
     await fetch(`${SB_URL}/rest/v1/solve_times`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({difficulty:diff,seconds,mistakes})});
     const r1=await fetch(`${SB_URL}/rest/v1/solve_times?difficulty=eq.${diff}&seconds=lt.${seconds}&select=id`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Prefer':'count=exact','Range':'0-0'}});
     const faster=parseInt((r1.headers.get('Content-Range')||'*/0').split('/')[1])||0;
     const r2=await fetch(`${SB_URL}/rest/v1/solve_times?difficulty=eq.${diff}&select=id`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Prefer':'count=exact','Range':'0-0'}});
     const total=Math.max(1,parseInt((r2.headers.get('Content-Range')||'*/1').split('/')[1])||1);
     return Math.round((faster/total)*100);
-  } catch(e){ return null; }
+  }catch(e){return null;}
 }
 
 // ── RNG + Puzzle ─────────────────────────────────────────────
 function mkRng(seed){let s=(seed^0x9e3779b9)>>>0;return()=>{s=Math.imul(s^(s>>>16),0x45d9f3b);s=Math.imul(s^(s>>>16),0x45d9f3b);s^=s>>>16;return(s>>>0)/4294967296;};}
-function genSol(rng){const g=Array.from({length:9},()=>Array(9).fill(0));const ok=(r,c,n)=>{for(let i=0;i<9;i++) if(g[r][i]===n||g[i][c]===n) return false;const br=~~(r/3)*3,bc=~~(c/3)*3;for(let i=0;i<3;i++) for(let j=0;j<3;j++) if(g[br+i][bc+j]===n) return false;return true;};const fill=p=>{if(p===81) return true;const r=~~(p/9),c=p%9;const ns=[1,2,3,4,5,6,7,8,9].sort(()=>rng()-.5);for(const n of ns) if(ok(r,c,n)){g[r][c]=n;if(fill(p+1)) return true;g[r][c]=0;}return false;};fill(0);return g;}
-function genCages(s,diff,rng){
-  const maxSz=diff==='extreme'?2:diff==='hard'||diff==='expert'?3:diff==='medium'?4:5;
-  const ci=Array.from({length:9},()=>Array(9).fill(-1));const cs=[];let id=0;
-  const cells=[];for(let r=0;r<9;r++) for(let c=0;c<9;c++) cells.push([r,c]);cells.sort(()=>rng()-.5);
-  for(const[sr,sc]of cells){
-    if(ci[sr][sc]!==-1) continue;
-    const sz=2+~~(rng()*(maxSz-1));const cage=[[sr,sc]];ci[sr][sc]=id;let tries=0;
-    while(cage.length<sz&&tries<40){const[r,c]=cage[~~(rng()*cage.length)];const dirs=[[0,1],[1,0],[0,-1],[-1,0]].sort(()=>rng()-.5);let a=false;for(const[dr,dc]of dirs){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<9&&nc>=0&&nc<9&&ci[nr][nc]===-1){cage.push([nr,nc]);ci[nr][nc]=id;a=true;break;}}if(!a) tries++;}
-    cs.push({id,cells:cage,sum:cage.reduce((t,[r,c])=>t+s[r][c],0)});id++;
-  }
-  return{cages:cs,cageId:ci};
-}
-function cvd(sz,sum){const v=new Set();function f(s,r,c,cur){if(c===0){if(r===0) cur.forEach(n=>v.add(n));return;}for(let n=s;n<=9&&r-n>=c-1;n++){cur.push(n);f(n+1,r-n,c-1,cur);cur.pop();}}f(1,sum,sz,[]);return v;}
-function hasUnique(cg,ci){
-  const nc=cg.length,cvc=cg.map(c=>cvd(c.cells.length,c.sum));
-  const ccid=Array.from({length:81},(_,i)=>ci[~~(i/9)][i%9]);
-  const rU=new Int32Array(9),cU=new Int32Array(9),bU=new Int32Array(9),caU=new Int32Array(nc),caFS=new Int32Array(nc),caFC=new Int32Array(nc);
-  const csz=cg.map(c=>c.cells.length),csum=cg.map(c=>c.sum);let count=0,iters=0;
-  function solve(pos){if(count>1||iters++>900000) return;if(pos===81){count++;return;}const r=~~(pos/9),c=pos%9,box=~~(r/3)*3+~~(c/3),cid=ccid[pos];const remS=csum[cid]-caFS[cid],remC=csz[cid]-caFC[cid],used=rU[r]|cU[c]|bU[box]|caU[cid];for(let n=1;n<=9;n++){if(used&(1<<n)) continue;if(!cvc[cid].has(n)) continue;const ns=remS-n,nc2=remC-1;if(nc2===0){if(ns!==0) continue;}else{if(ns<nc2||ns>nc2*9) continue;}const bit=1<<n;rU[r]|=bit;cU[c]|=bit;bU[box]|=bit;caU[cid]|=bit;caFS[cid]+=n;caFC[cid]++;solve(pos+1);rU[r]^=bit;cU[c]^=bit;bU[box]^=bit;caU[cid]^=bit;caFS[cid]-=n;caFC[cid]--;if(count>1||iters>900000) return;}}
-  solve(0);return count===1;
-}
-function genPuzzle(diff,rng){for(let a=0;a<12;a++){const s=genSol(rng);const g=genCages(s,diff,rng);if(hasUnique(g.cages,g.cageId)) return{sol:s,...g};}const s=genSol(rng);const g=genCages(s,diff,rng);return{sol:s,...g};}
+function genSol(rng){const g=Array.from({length:9},()=>Array(9).fill(0));const ok=(r,c,n)=>{for(let i=0;i<9;i++)if(g[r][i]===n||g[i][c]===n)return false;const br=~~(r/3)*3,bc=~~(c/3)*3;for(let i=0;i<3;i++)for(let j=0;j<3;j++)if(g[br+i][bc+j]===n)return false;return true;};const fill=p=>{if(p===81)return true;const r=~~(p/9),c=p%9;const ns=[1,2,3,4,5,6,7,8,9].sort(()=>rng()-.5);for(const n of ns)if(ok(r,c,n)){g[r][c]=n;if(fill(p+1))return true;g[r][c]=0;}return false;};fill(0);return g;}
+function genCages(s,diff,rng){const maxSz=diff==='extreme'?2:diff==='hard'||diff==='expert'?3:diff==='medium'?4:5;const ci=Array.from({length:9},()=>Array(9).fill(-1));const cs=[];let id=0;const cells=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)cells.push([r,c]);cells.sort(()=>rng()-.5);for(const[sr,sc]of cells){if(ci[sr][sc]!==-1)continue;const sz=2+~~(rng()*(maxSz-1));const cage=[[sr,sc]];ci[sr][sc]=id;let tries=0;while(cage.length<sz&&tries<40){const[r,c]=cage[~~(rng()*cage.length)];const dirs=[[0,1],[1,0],[0,-1],[-1,0]].sort(()=>rng()-.5);let a=false;for(const[dr,dc]of dirs){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<9&&nc>=0&&nc<9&&ci[nr][nc]===-1){cage.push([nr,nc]);ci[nr][nc]=id;a=true;break;}}if(!a)tries++;}cs.push({id,cells:cage,sum:cage.reduce((t,[r,c])=>t+s[r][c],0)});id++;}return{cages:cs,cageId:ci};}
+function cvd(sz,sum){const v=new Set();function f(s,r,c,cur){if(c===0){if(r===0)cur.forEach(n=>v.add(n));return;}for(let n=s;n<=9&&r-n>=c-1;n++){cur.push(n);f(n+1,r-n,c-1,cur);cur.pop();}}f(1,sum,sz,[]);return v;}
+function hasUnique(cg,ci){const nc=cg.length,cvc=cg.map(c=>cvd(c.cells.length,c.sum));const ccid=Array.from({length:81},(_,i)=>ci[~~(i/9)][i%9]);const rU=new Int32Array(9),cU=new Int32Array(9),bU=new Int32Array(9),caU=new Int32Array(nc),caFS=new Int32Array(nc),caFC=new Int32Array(nc);const csz=cg.map(c=>c.cells.length),csum=cg.map(c=>c.sum);let count=0,iters=0;function solve(pos){if(count>1||iters++>900000)return;if(pos===81){count++;return;}const r=~~(pos/9),c=pos%9,box=~~(r/3)*3+~~(c/3),cid=ccid[pos];const remS=csum[cid]-caFS[cid],remC=csz[cid]-caFC[cid],used=rU[r]|cU[c]|bU[box]|caU[cid];for(let n=1;n<=9;n++){if(used&(1<<n))continue;if(!cvc[cid].has(n))continue;const ns=remS-n,nc2=remC-1;if(nc2===0){if(ns!==0)continue;}else{if(ns<nc2||ns>nc2*9)continue;}const bit=1<<n;rU[r]|=bit;cU[c]|=bit;bU[box]|=bit;caU[cid]|=bit;caFS[cid]+=n;caFC[cid]++;solve(pos+1);rU[r]^=bit;cU[c]^=bit;bU[box]^=bit;caU[cid]^=bit;caFS[cid]-=n;caFC[cid]--;if(count>1||iters>900000)return;}}solve(0);return count===1;}
+function genPuzzle(diff,rng){for(let a=0;a<12;a++){const s=genSol(rng);const g=genCages(s,diff,rng);if(hasUnique(g.cages,g.cageId))return{sol:s,...g};}const s=genSol(rng);const g=genCages(s,diff,rng);return{sol:s,...g};}
 
-// ── Game launch ──────────────────────────────────────────────
-function startGame(diff){cDiff=diff;lastDaily=false;launchGame(diff,(Date.now()^~~(Math.random()*0xffffff))>>>0,false);}
-function startDailyGame(){cDiff='medium';lastDaily=true;const d=new Date();launchGame('medium',(d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate())>>>0,true);}
+// ── Launch ───────────────────────────────────────────────────
+function startGame(diff){cDiff=diff;lastDaily=false;launch(diff,(Date.now()^~~(Math.random()*0xffffff))>>>0,false);}
+function startDailyGame(){cDiff='medium';lastDaily=true;const d=new Date();launch('medium',(d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate())>>>0,true);}
 function playAgain(){lastDaily?startDailyGame():startGame(cDiff);}
 
-function launchGame(diff,seed,isDaily){
-  // Show game screen in generating state
-  showScreen('s-game');
-  document.getElementById('gen-msg').style.display='flex';
-  document.getElementById('g-grid').style.display='none';
-  document.getElementById('g-svg').style.display='none';
-  document.getElementById('game-actions')?document.querySelector('.game-actions').style.display='none':null;
-  document.getElementById('g-numpad').style.display='none';
+function launch(diff,seed,isDaily){
+  showScr('s-game');
+  setGameVisible(false);
+  document.getElementById('gen-wrap').style.display='flex';
   setTimeout(()=>{
-    const rng=mkRng(seed); const res=genPuzzle(diff,rng); setupGame(res,diff,isDaily);
+    const rng=mkRng(seed);setup(genPuzzle(diff,rng),diff,isDaily);
   },60);
 }
 
-function setupGame(res,diff,isDaily){
+function setGameVisible(v){
+  const d=v?'':'none';
+  document.getElementById('g-grid').style.display=v?'grid':'none';
+  document.getElementById('g-svg').style.display=v?'block':'none';
+  document.getElementById('gacts').style.display=v?'grid':'none';
+  document.getElementById('gnumpad').style.display=v?'grid':'none';
+  document.getElementById('gen-wrap').style.display=v?'none':'flex';
+}
+
+function setup(res,diff,isDaily){
   sol=res.sol;cages=res.cages;cageId=res.cageId;lastDaily=isDaily;
   board=Array.from({length:9},()=>Array(9).fill(0));
   notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));
-  sel=null;mis=0;score=0;hist=[];noteMode=false;hints=1;paused=false;
+  sel=null;mis=0;score=0;hist=[];noteMode=false;hints=1;paused=false;gameOver=false;
 
-  // Reset UI
   document.getElementById('notes-act').classList.remove('on');
-  document.getElementById('notes-pill').textContent='OFF';
-  document.getElementById('notes-pill').classList.remove('on');
-  document.getElementById('pause-ov').classList.remove('show');
-  document.getElementById('pause-btn').textContent='⏸';
+  document.getElementById('notes-tog').textContent='OFF';
+  document.getElementById('notes-tog').classList.remove('on');
+  document.getElementById('g-ov').classList.remove('show');
+  document.getElementById('pause-ico').textContent='⏸';
 
   const lbls={easy:'Easy',medium:'Medium',hard:'Hard',expert:'Expert',extreme:'Extreme'};
-  const lbl=isDaily?('Daily · '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})):(lbls[diff]||diff);
-  document.getElementById('g-diff-label').textContent=lbl;
+  const lbl=isDaily?'Daily · '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}):(lbls[diff]||diff);
+  document.getElementById('g-diff-lbl').textContent=lbl;
   document.getElementById('g-diff').textContent=lbls[diff]||diff;
-  document.getElementById('g-mis').textContent='0/3'; document.getElementById('g-mis').className='gstat-val';
+  document.getElementById('g-mis').textContent='0/3';
+  document.getElementById('g-mis').className='gs-val';
   document.getElementById('g-score').textContent='0';
   document.getElementById('g-time').textContent='00:00';
 
   clearInterval(tInt);secs=0;
-  tInt=setInterval(()=>{ if(!paused){secs++;document.getElementById('g-time').textContent=fmt(secs);} },1000);
+  tInt=setInterval(()=>{if(!paused&&!gameOver){secs++;document.getElementById('g-time').textContent=fmt(secs);}},1000);
 
-  pStats[diff].started++; saveSt(diff); saveState();
-
-  // Show game elements
-  document.getElementById('gen-msg').style.display='none';
-  document.getElementById('g-grid').style.display='';
-  document.getElementById('g-svg').style.display='';
-  document.querySelector('.game-actions').style.display='';
-  document.getElementById('g-numpad').style.display='';
-
+  pStats[diff].started++;saveSt(diff);saveState();
+  setGameVisible(true);
   render();
 }
 
 // ── Render ───────────────────────────────────────────────────
-function gsz(){ return Math.min(window.innerWidth - 24, window.innerHeight * .48, 480); }
+function gsz(){
+  const W=window.innerWidth,H=window.innerHeight;
+  // Reserve space: nav~80, stats~52, actions~70, numpad~78, safe~28 = ~308
+  const maxH=H-308;
+  return Math.floor(Math.min(W-28,maxH,420)/9)*9; // snap to 9
+}
 
 function render(){
   const grid=document.getElementById('g-grid');
-  const sz=gsz(); const CS=sz/9;
-  grid.style.width=sz+'px'; grid.style.height=sz+'px';
+  const sz=gsz();const CS=sz/9;
+  grid.style.width=sz+'px';grid.style.height=sz+'px';
   grid.style.gridTemplateColumns=`repeat(9,${CS}px)`;
-  // SVG: same size, positioned to overlap grid exactly
-  const svg=document.getElementById('g-svg');
-  svg.style.width=sz+'px'; svg.style.height=sz+'px';
-  svg.setAttribute('viewBox',`0 0 ${sz} ${sz}`);
-  // Make board-wrap take the right size
-  const wrap=document.getElementById('board-wrap');
-  const gridEl=grid;
-  // Position svg over grid
-  const gridRect=gridEl.getBoundingClientRect();
-  const wrapRect=wrap.getBoundingClientRect();
-  svg.style.left=(gridRect.left-wrapRect.left)+'px';
-  svg.style.top=(gridRect.top-wrapRect.top)+'px';
 
   grid.innerHTML='';
   const scage=sel?cageId[sel[0]][sel[1]]:-1;
   const sv=sel?board[sel[0]][sel[1]]:0;
-  for(let r=0;r<9;r++) for(let c=0;c<9;c++){
-    const el=document.createElement('div');el.className='cell';el.dataset.r=r;el.dataset.c=c;
+
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    const el=document.createElement('div');
+    el.className='cell';el.dataset.r=r;el.dataset.c=c;
     const v=board[r][c];
     if(v!==0){el.textContent=v;el.classList.add(v!==sol[r][c]?'err':'ok');}
     else if(notes[r][c].size>0){
@@ -935,92 +794,150 @@ function render(){
     }
     if(sel){
       const[sr,sc]=sel;
-      if(sr===r&&sc===c) el.classList.add('sel');
-      else if(cageId[r][c]===scage) el.classList.add('cage-hi');
-      else if(sr===r||sc===c||(~~(sr/3)===~~(r/3)&&~~(sc/3)===~~(c/3))) el.classList.add('hi');
-      if(sv>0&&v===sv&&!(sr===r&&sc===c)) el.classList.add('same');
+      if(sr===r&&sc===c)el.classList.add('sel');
+      else if(cageId[r][c]===scage)el.classList.add('cage-hi');
+      else if(sr===r||sc===c||(~~(sr/3)===~~(r/3)&&~~(sc/3)===~~(c/3)))el.classList.add('row-hi');
+      if(sv>0&&v===sv&&!(sr===r&&sc===c))el.classList.add('same-num');
     }
     el.addEventListener('click',()=>{sel=[r,c];render();});
     grid.appendChild(el);
   }
-  renderSVG(sz,CS);
+
+  // SVG — exact grid position
+  requestAnimationFrame(()=>{
+    const svg=document.getElementById('g-svg');
+    const gr=grid.getBoundingClientRect();
+    const wr=document.getElementById('board-outer').getBoundingClientRect();
+    svg.style.left=(gr.left-wr.left)+'px';
+    svg.style.top=(gr.top-wr.top)+'px';
+    svg.style.width=sz+'px';svg.style.height=sz+'px';
+    svg.setAttribute('viewBox',`0 0 ${sz} ${sz}`);
+    renderSVG(sz,CS);
+  });
 }
 
 function renderSVG(sz,CS){
-  const svg=document.getElementById('g-svg'); svg.innerHTML=''; const p=2;
+  const svg=document.getElementById('g-svg');svg.innerHTML='';
+  const p=1.5;
   for(const cage of cages){
-    const cset=new Set(cage.cells.map(([r,c])=>r*9+c)); const segs=[];
+    const cset=new Set(cage.cells.map(([r,c])=>r*9+c));const segs=[];
     for(const[r,c]of cage.cells){
       const x=c*CS,y=r*CS;
-      if(r===0||!cset.has((r-1)*9+c)) segs.push(`M${x+p},${y+p}L${x+CS-p},${y+p}`);
-      if(c===8||!cset.has(r*9+c+1)) segs.push(`M${x+CS-p},${y+p}L${x+CS-p},${y+CS-p}`);
-      if(r===8||!cset.has((r+1)*9+c)) segs.push(`M${x+p},${y+CS-p}L${x+CS-p},${y+CS-p}`);
-      if(c===0||!cset.has(r*9+c-1)) segs.push(`M${x+p},${y+p}L${x+p},${y+CS-p}`);
+      if(r===0||!cset.has((r-1)*9+c))segs.push(`M${x+p},${y+p}L${x+CS-p},${y+p}`);
+      if(c===8||!cset.has(r*9+c+1))segs.push(`M${x+CS-p},${y+p}L${x+CS-p},${y+CS-p}`);
+      if(r===8||!cset.has((r+1)*9+c))segs.push(`M${x+p},${y+CS-p}L${x+CS-p},${y+CS-p}`);
+      if(c===0||!cset.has(r*9+c-1))segs.push(`M${x+p},${y+p}L${x+p},${y+CS-p}`);
     }
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',segs.join(' ')); path.setAttribute('stroke-width','1.8');
-    path.setAttribute('stroke-dasharray','4,2.5'); path.setAttribute('fill','none');
+    path.setAttribute('d',segs.join(' '));
+    path.setAttribute('stroke',getComputedStyle(document.documentElement).getPropertyValue('--cage-clr').trim());
+    path.setAttribute('stroke-width','1.2');
+    path.setAttribute('stroke-dasharray','3,2');
+    path.setAttribute('fill','none');
     path.setAttribute('stroke-linecap','round');
-    path.setAttribute('stroke','rgba(48,209,88,.55)');
     svg.appendChild(path);
+
     const lc=cage.cells.reduce((m,[r,c])=>r<m[0]||(r===m[0]&&c<m[1])?[r,c]:m);
     const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-    const fs=Math.max(7,Math.round(CS*.27));
-    txt.setAttribute('x',lc[1]*CS+3); txt.setAttribute('y',lc[0]*CS+fs+1);
-    txt.setAttribute('font-size',fs); txt.setAttribute('font-weight','700');
-    txt.setAttribute('fill','rgba(48,209,88,.90)');
+    const fs=Math.max(6,Math.round(CS*.24));
+    txt.setAttribute('x',lc[1]*CS+2.5);
+    txt.setAttribute('y',lc[0]*CS+fs+1);
+    txt.setAttribute('font-size',fs);
+    txt.setAttribute('font-weight','600');
+    txt.setAttribute('fill',getComputedStyle(document.documentElement).getPropertyValue('--cage-lbl').trim());
     txt.setAttribute('font-family','-apple-system,sans-serif');
-    txt.textContent=cage.sum; svg.appendChild(txt);
+    txt.textContent=cage.sum;
+    svg.appendChild(txt);
   }
-}
-
-// ── Game over ────────────────────────────────────────────────
-function triggerGameOver(){
-  clearInterval(tInt);tInt=null;paused=true;
-  localStorage.removeItem('ks3_gs');
-  const ov=document.getElementById('pause-ov');
-  ov.innerHTML=`<div style="font-size:48px;">💀</div><div style="font-size:22px;font-weight:700;color:#ff453a;margin-top:4px;">Game Over</div><div style="font-size:15px;color:rgba(255,255,255,.6);margin-top:6px;">3 mistakes — puzzle failed</div><div style="display:flex;gap:10px;margin-top:20px;"><button onclick="playAgain()" style="padding:12px 24px;font-size:16px;font-weight:600;background:#30d158;color:#000;border:none;border-radius:12px;cursor:pointer;font-family:inherit;">Try Again</button><button onclick="goHome()" style="padding:12px 24px;font-size:16px;font-weight:500;background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;">Home</button></div>`;
-  ov.classList.add('show');
 }
 
 // ── Input ────────────────────────────────────────────────────
 function inputNum(n){
-  if(!sel||paused) return; const[r,c]=sel;
-  if(noteMode){hist.push({t:'n',r,c,v:new Set(notes[r][c])});notes[r][c].has(n)?notes[r][c].delete(n):notes[r][c].add(n);}
-  else{
-    hist.push({t:'v',r,c,v:board[r][c]});board[r][c]=n;
+  if(!sel||paused||gameOver)return;
+  const[r,c]=sel;
+  if(noteMode){
+    hist.push({t:'n',r,c,v:new Set(notes[r][c])});
+    notes[r][c].has(n)?notes[r][c].delete(n):notes[r][c].add(n);
+  }else{
+    hist.push({t:'v',r,c,v:board[r][c]});
+    board[r][c]=n;
     if(n!==sol[r][c]){
-      mis++;const el=document.getElementById('g-mis');el.textContent=mis+'/3';
-      el.className='gstat-val'+(mis>=3?' danger':mis>=2?' warn':'');
-      if(mis>=3){render();triggerGameOver();return;}
-    } else{score+=Math.max(10,100-mis*20);document.getElementById('g-score').textContent=score;}
-    saveState();checkWin();
+      mis++;
+      const el=document.getElementById('g-mis');
+      el.textContent=mis+'/3';
+      el.className='gs-val'+(mis>=3?' danger':mis>=2?' warn':'');
+      saveState();
+      render();
+      if(mis>=3){triggerGameOver();return;}
+    }else{
+      score+=Math.max(10,100-mis*20);
+      document.getElementById('g-score').textContent=score;
+      saveState();
+      checkWin();
+    }
+    return;
   }
   render();
 }
-function doErase(){if(!sel||paused) return;const[r,c]=sel;hist.push({t:'v',r,c,v:board[r][c]});board[r][c]=0;notes[r][c].clear();saveState();render();}
-function doUndo(){if(!hist.length||paused) return;const h=hist.pop();if(h.t==='v') board[h.r][h.c]=h.v;else notes[h.r][h.c]=h.v;saveState();render();}
-function toggleNotes(){noteMode=!noteMode;document.getElementById('notes-act').classList.toggle('on',noteMode);document.getElementById('notes-pill').textContent=noteMode?'ON':'OFF';document.getElementById('notes-pill').classList.toggle('on',noteMode);}
-function useHint(){if(!sel||paused||hints<=0) return;const[r,c]=sel;if(board[r][c]===sol[r][c]) return;hist.push({t:'v',r,c,v:board[r][c]});board[r][c]=sol[r][c];notes[r][c].clear();hints--;score=Math.max(0,score-50);document.getElementById('g-score').textContent=score;saveState();render();}
+function doErase(){if(!sel||paused||gameOver)return;const[r,c]=sel;hist.push({t:'v',r,c,v:board[r][c]});board[r][c]=0;notes[r][c].clear();saveState();render();}
+function doUndo(){if(!hist.length||paused||gameOver)return;const h=hist.pop();if(h.t==='v')board[h.r][h.c]=h.v;else notes[h.r][h.c]=h.v;saveState();render();}
+function toggleNotes(){noteMode=!noteMode;document.getElementById('notes-act').classList.toggle('on',noteMode);document.getElementById('notes-tog').textContent=noteMode?'ON':'OFF';document.getElementById('notes-tog').classList.toggle('on',noteMode);}
+function useHint(){
+  if(!sel||paused||gameOver||hints<=0)return;
+  const[r,c]=sel;if(board[r][c]===sol[r][c])return;
+  hist.push({t:'v',r,c,v:board[r][c]});board[r][c]=sol[r][c];notes[r][c].clear();
+  hints--;score=Math.max(0,score-50);
+  document.getElementById('g-score').textContent=score;
+  saveState();render();checkWin();
+}
 
 // ── Pause ────────────────────────────────────────────────────
-function togglePause(){paused=!paused;document.getElementById('pause-ov').classList.toggle('show',paused);document.getElementById('pause-btn').textContent=paused?'▶':'⏸';}
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&!paused&&tInt&&sol){paused=true;document.getElementById('pause-ov').classList.add('show');document.getElementById('pause-btn').textContent='▶';}});
-window.addEventListener('blur',()=>{if(!paused&&tInt&&sol){paused=true;document.getElementById('pause-ov').classList.add('show');document.getElementById('pause-btn').textContent='▶';}});
+function togglePause(){
+  if(gameOver)return;
+  paused=!paused;
+  if(paused){
+    document.getElementById('ov-ico').textContent='⏸';
+    document.getElementById('ov-title').textContent='Paused';
+    document.getElementById('ov-sub').textContent='';
+    document.getElementById('ov-btns').innerHTML='<button class="ov-btn" onclick="togglePause()">Resume</button>';
+    document.getElementById('g-ov').classList.add('show');
+    document.getElementById('pause-ico').textContent='▶';
+  }else{
+    document.getElementById('g-ov').classList.remove('show');
+    document.getElementById('pause-ico').textContent='⏸';
+  }
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!paused&&!gameOver&&tInt&&sol){paused=true;document.getElementById('ov-ico').textContent='⏸';document.getElementById('ov-title').textContent='Paused';document.getElementById('ov-sub').textContent='';document.getElementById('ov-btns').innerHTML='<button class="ov-btn" onclick="togglePause()">Resume</button>';document.getElementById('g-ov').classList.add('show');document.getElementById('pause-ico').textContent='▶';}});
+window.addEventListener('blur',()=>{if(!paused&&!gameOver&&tInt&&sol){paused=true;document.getElementById('ov-ico').textContent='⏸';document.getElementById('ov-title').textContent='Paused';document.getElementById('ov-sub').textContent='';document.getElementById('ov-btns').innerHTML='<button class="ov-btn" onclick="togglePause()">Resume</button>';document.getElementById('g-ov').classList.add('show');document.getElementById('pause-ico').textContent='▶';}});
 
-// ── State save ───────────────────────────────────────────────
-function saveState(){if(!sol) return;try{localStorage.setItem('ks3_gs',JSON.stringify({sol,board,cDiff,lastDaily,secs,mis,score,hints,cages,cageId,hist:hist.slice(-20)}));}catch(e){}}
-function restoreState(){try{const raw=localStorage.getItem('ks3_gs');if(!raw) return false;const st=JSON.parse(raw);sol=st.sol;board=st.board;cDiff=st.cDiff;lastDaily=st.lastDaily;secs=st.secs||0;mis=st.mis||0;score=st.score||0;hints=st.hints??1;cages=st.cages;cageId=st.cageId;hist=st.hist||[];notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));return true;}catch(e){return false;}}
+// ── Game over ────────────────────────────────────────────────
+function triggerGameOver(){
+  clearInterval(tInt);tInt=null;gameOver=true;paused=true;
+  localStorage.removeItem('ks4_gs');
+  document.getElementById('ov-ico').textContent='💀';
+  document.getElementById('ov-title').textContent='Game Over';
+  document.getElementById('ov-sub').textContent='3 mistakes — better luck next time';
+  document.getElementById('ov-btns').innerHTML='<button class="ov-btn" onclick="playAgain()">Try Again</button><button class="ov-btn ghost" onclick="goHome()">Home</button>';
+  document.getElementById('g-ov').classList.add('show');
+}
+
+// ── State persistence ────────────────────────────────────────
+function saveState(){if(!sol)return;try{localStorage.setItem('ks4_gs',JSON.stringify({sol,board,cDiff,lastDaily,secs,mis,score,hints,cages,cageId,hist:hist.slice(-20)}));}catch(e){}}
 
 // ── Win ──────────────────────────────────────────────────────
 async function checkWin(){
-  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(board[r][c]!==sol[r][c]) return;
-  clearInterval(tInt);tInt=null;localStorage.removeItem('ks3_gs');
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(board[r][c]!==sol[r][c])return;
+  clearInterval(tInt);tInt=null;
+  localStorage.removeItem('ks4_gs');
+
   const d=pStats[cDiff],pf=d.finished,pt=d.totalSecs;
-  d.finished++;d.totalSecs+=secs;if(mis===0) d.noMistakes++;
-  const nb=d.bestSecs===0||secs<d.bestSecs;if(nb) d.bestSecs=secs;
+  d.finished++;d.totalSecs+=secs;
+  if(mis===0)d.noMistakes++;
+  const nb=d.bestSecs===0||secs<d.bestSecs;
+  if(nb)d.bestSecs=secs;
   await saveSt(cDiff);
 
+  // vs avg
   const vv=document.getElementById('win-vavg');
   if(pf===0){vv.textContent='First!';vv.className='wc-val';}
   else{const avg=pt/pf,pct=Math.round(Math.abs((avg-secs)/avg*100));if(secs<avg){vv.textContent='+'+pct+'% faster';vv.className='wc-val good';}else if(secs>avg){vv.textContent=pct+'% slower';vv.className='wc-val bad';}else{vv.textContent='On avg';vv.className='wc-val';}}
@@ -1035,39 +952,43 @@ async function checkWin(){
   document.getElementById('win-cw').textContent=d.noMistakes;
   document.getElementById('win-fin').textContent=d.finished;
   const lbls={easy:'Easy',medium:'Medium',hard:'Hard',expert:'Expert',extreme:'Extreme'};
-  document.getElementById('win-sub').textContent=(lastDaily?'Daily Challenge':'Difficulty: '+(lbls[cDiff]||cDiff));
-  document.getElementById('win-pct').textContent='…';document.getElementById('win-pct-lbl').textContent='Calculating percentile…';
-  showScreen('s-win');
+  document.getElementById('win-sub').textContent=lastDaily?'Daily Challenge · '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Difficulty: '+(lbls[cDiff]||cDiff);
+  document.getElementById('win-sec-lbl').textContent='Your '+(lbls[cDiff]||'') +' Stats';
+  document.getElementById('win-pct').textContent='…';
+  document.getElementById('win-pct-lbl').textContent='Calculating percentile…';
+  showScr('s-win');
 
   const rp=await recordSolve(cDiff,secs,mis);
   if(rp!==null){document.getElementById('win-pct').textContent=rp+'%';document.getElementById('win-pct').className='win-pct real';document.getElementById('win-pct-lbl').textContent=`Faster than ${rp}% of all players`;}
   else{const med={easy:480,medium:900,hard:1500,expert:1800,extreme:2400,daily:900}[cDiff]||900;const sim=Math.min(99,Math.max(1,Math.round(50*(1+Math.log2(Math.max(.1,med/secs))*.55))));document.getElementById('win-pct').textContent=sim+'%';document.getElementById('win-pct').className='win-pct sim';document.getElementById('win-pct-lbl').textContent=`Faster than ${sim}% of players · simulated`;}
 }
 
-// ── Numpad ───────────────────────────────────────────────────
-const npEl=document.getElementById('g-numpad');
+// ── Numpad build ─────────────────────────────────────────────
+const npEl=document.getElementById('gnumpad');
 for(let n=1;n<=9;n++){const b=document.createElement('button');b.className='nk';b.textContent=n;b.addEventListener('click',()=>inputNum(n));npEl.appendChild(b);}
 
 // ── Keyboard ─────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
-  if(e.key>='1'&&e.key<='9') inputNum(+e.key);
-  else if(e.key==='Backspace'||e.key==='Delete') doErase();
-  else if((e.ctrlKey||e.metaKey)&&e.key==='z') doUndo();
-  else if(e.key===' '){e.preventDefault();togglePause();}
-  else if(sel){const[r,c]=sel;
+  if(document.getElementById('s-auth').classList.contains('active'))return;
+  if(e.key>='1'&&e.key<='9'){inputNum(+e.key);return;}
+  if(e.key==='Backspace'||e.key==='Delete'){doErase();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){doUndo();return;}
+  if(e.key===' '){e.preventDefault();togglePause();return;}
+  if(sel&&document.getElementById('s-game').classList.contains('active')){
+    const[r,c]=sel;
     if(e.key==='ArrowUp'&&r>0){sel=[r-1,c];render();}
     else if(e.key==='ArrowDown'&&r<8){sel=[r+1,c];render();}
     else if(e.key==='ArrowLeft'&&c>0){sel=[r,c-1];render();}
     else if(e.key==='ArrowRight'&&c<8){sel=[r,c+1];render();}
   }
 });
-window.addEventListener('resize',()=>{if(sol&&document.getElementById('s-game').classList.contains('active')) render();});
+window.addEventListener('resize',()=>{if(sol&&document.getElementById('s-game').classList.contains('active'))render();});
 
-// ── Enter key in auth ────────────────────────────────────────
-document.getElementById('reg-uname').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('reg-pass').focus();});
-document.getElementById('reg-pass').addEventListener('keydown',e=>{if(e.key==='Enter') doReg();});
-document.getElementById('login-uname').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('login-pass').focus();});
-document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
+// ── Auth enter keys ──────────────────────────────────────────
+document.getElementById('reg-uname').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('reg-pass').focus();});
+document.getElementById('reg-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doReg();});
+document.getElementById('login-uname').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // ── Init ─────────────────────────────────────────────────────
 loadLS();
