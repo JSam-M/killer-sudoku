@@ -1246,7 +1246,7 @@ function updateStreakBanner(){
   banner.classList.add('show');
   const playedToday=s.lastDate===today;
   document.getElementById('streak-count').textContent=s.current===1?'1 day streak!':s.current+' day streak! 🔥';
-  document.getElementById('streak-sub').textContent=playedToday?'Come back tomorrow to keep it going!':'Play today's daily to keep it going';
+  document.getElementById('streak-sub').textContent=playedToday?'Come back tomorrow to keep it going!':'Play today\'s daily to keep it going';
   const bestEl=document.getElementById('streak-best');
   if(bestEl) bestEl.textContent=s.best>1?'Personal best: '+s.best+' days':'';
 }
