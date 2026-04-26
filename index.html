@@ -1017,7 +1017,19 @@ async function tryAutoLogin(){try{const s=localStorage.getItem('ks4_u');if(s){us
 
 // ── Navigation ───────────────────────────────────────────────
 function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function enterHome(){loadLS();document.getElementById('home-name').textContent=user?user.username:'Guest';document.getElementById('home-av').textContent=user?user.username[0].toUpperCase():'?';const d=new Date();document.getElementById('daily-date').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});showScr('s-home');}
+function enterHome(){
+  loadLS();
+  document.getElementById('home-name').textContent=user?user.username:'Guest';
+  document.getElementById('home-av').textContent=user?user.username[0].toUpperCase():'?';
+  const d=new Date();
+  document.getElementById('daily-date').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  updateStreakBanner();
+  showTabBar();
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-home').classList.add('active');
+  document.getElementById('s-stats').classList.remove('active');
+  showScr('s-home');
+}
 function goHome(){clearInterval(tInt);tInt=null;paused=false;gameOver=false;document.getElementById('g-ov').classList.remove('show');enterHome();}
 
 // ── Backend ──────────────────────────────────────────────────
