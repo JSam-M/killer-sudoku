@@ -196,10 +196,14 @@ body{
   position:fixed;bottom:0;left:0;right:0;
   background:var(--bg1);
   border-top:.5px solid var(--sep);
-  display:none;z-index:50;
+  display:flex;z-index:50;
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-.tab-bar.visible{display:flex;}
+/* Hide tab bar on auth, game and win screens */
+#s-auth.active ~ .tab-bar,
+#s-game.active ~ .tab-bar,
+#s-win.active ~ .tab-bar,
+.tab-bar.hidden{display:none;}
 .tab-item{
   flex:1;display:flex;flex-direction:column;align-items:center;
   padding:10px 0 6px;cursor:pointer;gap:3px;
@@ -808,25 +812,6 @@ body{
  <button class="stats-reset-btn" onclick="confirmResetStats()">Reset All Stats</button>
 </div>
 
-<!-- ════ TAB BAR ════════════════════════════════════════ -->
-<div class="tab-bar" id="tab-bar">
- <div class="tab-item active" id="tab-home" onclick="switchTab('home')">
-  <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-   <polyline points="9 22 9 12 15 12 15 22"/>
-  </svg>
-  <div class="tab-lbl">Play</div>
- </div>
- <div class="tab-item" id="tab-stats" onclick="switchTab('stats')">
-  <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-   <line x1="18" y1="20" x2="18" y2="10"/>
-   <line x1="12" y1="20" x2="12" y2="4"/>
-   <line x1="6" y1="20" x2="6" y2="14"/>
-  </svg>
-  <div class="tab-lbl">Stats</div>
- </div>
-</div>
-
 <!-- ════ GAME ══════════════════════════════════════════ -->
 <div id="s-game" class="scr">
  <!-- Nav -->
@@ -949,6 +934,26 @@ body{
   <button class="win-alt" onclick="goHome()">Change Difficulty</button>
  </div>
 </div>
+
+<!-- ════ TAB BAR ════════════════════════════════════════ -->
+<div class="tab-bar" id="tab-bar">
+ <div class="tab-item active" id="tab-home" onclick="switchTab('home')">
+  <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+   <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+  <div class="tab-lbl">Play</div>
+ </div>
+ <div class="tab-item" id="tab-stats" onclick="switchTab('stats')">
+  <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+   <line x1="18" y1="20" x2="18" y2="10"/>
+   <line x1="12" y1="20" x2="12" y2="4"/>
+   <line x1="6" y1="20" x2="6" y2="14"/>
+  </svg>
+  <div class="tab-lbl">Stats</div>
+ </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -1536,10 +1541,10 @@ function switchTab(tab){
 }
 
 function showTabBar(){
-  document.getElementById('tab-bar').classList.add('visible');
+  document.getElementById('tab-bar').classList.remove('hidden');
 }
 function hideTabBar(){
-  document.getElementById('tab-bar').classList.remove('visible');
+  document.getElementById('tab-bar').classList.add('hidden');
 }
 
 // ── Stats page ────────────────────────────────────────────────
