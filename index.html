@@ -30,11 +30,22 @@
   --r:        14px;
   --r-sm:     10px;
   /* grid */
-  --grid-bg:  #111;
-  --cell-sep: rgba(255,255,255,.09);
-  --box-sep:  rgba(255,255,255,.45);
-  --cage-clr: rgba(255,255,255,.22);
-  --cage-lbl: rgba(255,255,255,.45);
+  --grid-bg:  #161618;
+  --cell-sep: rgba(255,255,255,.08);
+  --box-sep:  rgba(255,255,255,.42);
+  --cage-line:rgba(255,255,255,.30);
+  --cage-lbl: rgba(255,255,255,.50);
+  /* cage tints — maximally distinct, colorblind-safe hue wheel */
+  --t0:rgba(255,80,80,.22);   /* red */
+  --t1:rgba(255,165,0,.22);   /* orange */
+  --t2:rgba(255,230,0,.20);   /* yellow */
+  --t3:rgba(80,220,100,.22);  /* lime green */
+  --t4:rgba(0,200,220,.22);   /* cyan */
+  --t5:rgba(50,120,255,.24);  /* blue */
+  --t6:rgba(180,80,255,.22);  /* violet */
+  --t7:rgba(255,80,200,.21);  /* magenta */
+  --t8:rgba(0,190,160,.22);   /* teal */
+  --t9:rgba(255,140,180,.21); /* pink */
 }
 @media(prefers-color-scheme:light){
   :root{
@@ -43,8 +54,18 @@
     --sep:rgba(0,0,0,.11);--fill:rgba(0,0,0,.05);
     --accent:#34c759;--acc-fg:#fff;--red:#ff3b30;--orange:#ff9500;--blue:#007aff;
     --sel:rgba(52,199,89,.20);--sel2:rgba(52,199,89,.09);--hi:rgba(0,0,0,.04);
-    --grid-bg:#fff;--cell-sep:rgba(0,0,0,.08);--box-sep:rgba(0,0,0,.40);
-    --cage-clr:rgba(0,0,0,.22);--cage-lbl:rgba(0,0,0,.40);
+    --grid-bg:#fff;--cell-sep:rgba(0,0,0,.07);--box-sep:rgba(0,0,0,.38);
+    --cage-line:rgba(0,0,0,.28);--cage-lbl:rgba(0,0,0,.42);
+    --t0:rgba(220,50,50,.14);   /* red */
+    --t1:rgba(220,130,0,.14);   /* orange */
+    --t2:rgba(200,180,0,.13);   /* yellow */
+    --t3:rgba(30,160,60,.14);   /* lime */
+    --t4:rgba(0,160,180,.14);   /* cyan */
+    --t5:rgba(0,90,220,.14);    /* blue */
+    --t6:rgba(140,50,220,.13);  /* violet */
+    --t7:rgba(210,40,160,.13);  /* magenta */
+    --t8:rgba(0,150,130,.14);   /* teal */
+    --t9:rgba(210,100,150,.13); /* pink */
   }
 }
 
@@ -180,6 +201,11 @@ body{
    GAME
 ═══════════════════════════════════════════════════ */
 #s-game{background:var(--bg);}
+/* Desktop: center game content */
+@media(min-width:600px){
+  #s-game{align-items:center;}
+  .gnav,.gstats,.board-outer,.gacts,.gnumpad{max-width:420px;width:100%;}
+}
 
 /* Nav bar */
 .gnav{
@@ -239,7 +265,7 @@ body{
 }
 .cell{
   aspect-ratio:1;display:flex;align-items:center;justify-content:center;
-  font-size:clamp(13px,3.6vw,18px);font-weight:600;
+  font-size:clamp(11px,2.8vw,16px);font-weight:600;
   color:var(--label);cursor:pointer;user-select:none;
   background:var(--grid-bg);
   border-right:.5px solid var(--cell-sep);
@@ -321,7 +347,7 @@ body{
 }
 .nk{
   aspect-ratio:.65;display:flex;align-items:center;justify-content:center;
-  font-size:clamp(18px,5.2vw,26px);font-weight:700;
+  font-size:clamp(14px,3.5vw,20px);font-weight:700;
   background:var(--bg1);border-radius:var(--r-sm);
   color:var(--accent);cursor:pointer;touch-action:manipulation;
   border:none;outline:none;
@@ -333,36 +359,94 @@ body{
 .gen-wrap{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
 .gen-spin{width:28px;height:28px;border:2.5px solid var(--bg2);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+@keyframes cell-pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes cell-err{0%{transform:translateX(0)}20%{transform:translateX(-3px)}50%{transform:translateX(3px)}80%{transform:translateX(-2px)}100%{transform:translateX(0)}}
+@keyframes cell-flash{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+.cell.anim-ok{animation:cell-pop .25s cubic-bezier(.34,1.56,.64,1) forwards;}
+.cell.anim-err{animation:cell-err .3s ease forwards;}
+.cell.anim-flash{animation:cell-flash .2s ease forwards;}
 .gen-lbl{font-size:15px;color:var(--label2);}
 
 /* ═══════════════════════════════════════════════════
    WIN
 ═══════════════════════════════════════════════════ */
-#s-win{
-  background:var(--bg);
-  padding:calc(env(safe-area-inset-top,0px)+20px) 16px
-          calc(env(safe-area-inset-bottom,0px)+20px);
-  overflow-y:auto;
-}
+#s-win{background:var(--bg);overflow-y:auto;}
 .win-inner{max-width:390px;margin:0 auto;}
 
-/* Hero */
-.win-hero{text-align:center;padding:8px 0 24px;}
-.win-hero-ico{font-size:56px;margin-bottom:10px;}
-.win-hero-h{font-size:30px;font-weight:700;letter-spacing:-.4px;}
-.win-hero-s{font-size:15px;color:var(--label2);margin-top:5px;}
+/* ── Phase 1: Full-screen celebration ── */
+.win-celebration{
+  min-height:100vh;min-height:-webkit-fill-available;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top,0px)+20px) 24px 32px;
+  text-align:center;position:relative;overflow:hidden;
+}
+/* Confetti canvas */
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;}
+
+.win-cel-content{position:relative;z-index:1;width:100%;max-width:390px;}
+.win-cel-ico{font-size:72px;margin-bottom:16px;animation:trophy-in .6s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes trophy-in{from{transform:scale(0) rotate(-15deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.win-cel-h{
+  font-size:36px;font-weight:700;letter-spacing:-.5px;
+  animation:fade-up .5s .15s ease both;
+}
+.win-cel-s{
+  font-size:17px;color:var(--label2);margin-top:6px;
+  animation:fade-up .5s .25s ease both;
+}
+@keyframes fade-up{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* Big percentile */
-.win-pct-wrap{
-  background:var(--bg1);border-radius:var(--r);
-  padding:22px 20px;text-align:center;margin-bottom:8px;
+.win-pct-block{
+  margin:28px 0 24px;animation:fade-up .5s .35s ease both;
 }
-.win-pct{font-size:68px;font-weight:700;line-height:1;letter-spacing:-3px;}
+.win-pct{
+  font-size:80px;font-weight:700;line-height:1;letter-spacing:-4px;
+  display:block;
+}
 .win-pct.real{color:var(--accent);}
 .win-pct.sim{color:var(--blue);}
-.win-pct-lbl{font-size:14px;color:var(--label2);margin-top:5px;}
+.win-pct-lbl{font-size:16px;color:var(--label2);margin-top:6px;}
 
-/* Stat cards */
+/* This-game quick stats */
+.win-quick{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-bottom:28px;width:100%;
+  animation:fade-up .5s .45s ease both;
+}
+.win-q-item{background:var(--bg1);border-radius:var(--r-sm);padding:12px 8px;}
+.win-q-lbl{font-size:11px;font-weight:500;color:var(--label3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+.win-q-val{font-size:18px;font-weight:700;color:var(--label);font-variant-numeric:tabular-nums;}
+.win-q-val.good{color:var(--accent);}
+.win-q-val.bad{color:var(--red);}
+
+/* CTA buttons */
+.win-cta{
+  display:flex;flex-direction:column;gap:10px;width:100%;
+  animation:fade-up .5s .55s ease both;
+}
+.win-main{
+  width:100%;padding:16px;font-size:17px;font-weight:600;
+  background:var(--accent);color:var(--acc-fg);
+  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;
+}
+.win-main:active{opacity:.8;}
+.win-scroll-hint{
+  font-size:14px;color:var(--label3);cursor:pointer;padding:4px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
+/* ── Phase 2: Stats section ── */
+.win-stats-section{
+  padding:0 16px calc(env(safe-area-inset-bottom,0px)+24px);
+}
+.win-stats-divider{
+  height:1px;background:var(--sep);margin:0 0 20px;
+}
+.win-sec-lbl{
+  font-size:13px;font-weight:500;color:var(--label2);
+  padding:0 4px 8px;letter-spacing:.1px;
+}
 .wgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:7px;}
 .wgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:7px;}
 .wcard{background:var(--bg1);border-radius:var(--r-sm);padding:12px 8px;text-align:center;}
@@ -371,30 +455,14 @@ body{
 .wc-val.good{color:var(--accent);}
 .wc-val.bad{color:var(--red);}
 .wc-sub{font-size:10px;color:var(--accent);min-height:13px;margin-top:2px;}
-
-.win-sec-lbl{
-  font-size:13px;font-weight:500;color:var(--label2);
-  padding:12px 4px 6px;letter-spacing:.1px;
-}
-/* Bottom count row — inset list style */
 .win-counts{background:var(--bg1);border-radius:var(--r-sm);overflow:hidden;margin-bottom:16px;}
-.wcount-row{display:flex;border-top:.5px solid var(--sep);}
-.wcount-row:first-child{border-top:none;}
+.wcount-row{display:flex;}
 .wcell{flex:1;padding:11px 8px;text-align:center;border-left:.5px solid var(--sep);}
 .wcell:first-child{border-left:none;}
-
-/* Buttons */
-.win-actions{display:flex;gap:8px;}
-.win-main{
-  flex:1;padding:15px;font-size:17px;font-weight:600;
-  background:var(--accent);color:var(--acc-fg);
-  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;
-}
-.win-main:active{opacity:.8;}
 .win-alt{
-  padding:15px 18px;font-size:15px;font-weight:500;
+  width:100%;padding:15px;font-size:17px;font-weight:500;
   background:var(--bg1);color:var(--label2);
-  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;
+  border:none;border-radius:var(--r);cursor:pointer;font-family:inherit;margin-bottom:8px;
 }
 .win-alt:active{opacity:.7;}
 </style>
@@ -579,27 +647,40 @@ body{
 </div>
 
 <!-- ════ WIN ════════════════════════════════════════════ -->
+<canvas id="confetti-canvas"></canvas>
 <div id="s-win" class="scr">
- <div class="win-inner">
-  <div class="win-hero">
-   <div class="win-hero-ico">🏆</div>
-   <div class="win-hero-h">Puzzle Solved!</div>
-   <div class="win-hero-s" id="win-sub">Well done</div>
+ <!-- Phase 1: Celebration -->
+ <div class="win-celebration">
+  <div class="win-cel-content">
+   <div class="win-cel-ico">🏆</div>
+   <div class="win-cel-h">Puzzle Solved!</div>
+   <div class="win-cel-s" id="win-sub">Well done</div>
+   <div class="win-pct-block">
+    <span class="win-pct" id="win-pct">…</span>
+    <div class="win-pct-lbl" id="win-pct-lbl">Calculating percentile…</div>
+   </div>
+   <div class="win-quick">
+    <div class="win-q-item"><div class="win-q-lbl">Time</div><div class="win-q-val" id="win-time">—</div></div>
+    <div class="win-q-item"><div class="win-q-lbl">Mistakes</div><div class="win-q-val" id="win-mis">—</div></div>
+    <div class="win-q-item"><div class="win-q-lbl">vs Avg</div><div class="win-q-val" id="win-vavg">—</div></div>
+   </div>
+   <div class="win-cta">
+    <button class="win-main" onclick="playAgain()">Play Again</button>
+    <div class="win-scroll-hint" onclick="document.getElementById('win-stats').scrollIntoView({behavior:'smooth'})">
+     See your stats ↓
+    </div>
+   </div>
   </div>
-  <div class="win-pct-wrap">
-   <div class="win-pct" id="win-pct">…</div>
-   <div class="win-pct-lbl" id="win-pct-lbl">Calculating percentile…</div>
-  </div>
-  <div class="wgrid3">
-   <div class="wcard"><div class="wc-lbl">Time</div><div class="wc-val" id="win-time">—</div></div>
-   <div class="wcard"><div class="wc-lbl">Mistakes</div><div class="wc-val" id="win-mis">—</div></div>
-   <div class="wcard"><div class="wc-lbl">vs Avg</div><div class="wc-val" id="win-vavg">—</div></div>
-  </div>
+ </div>
+
+ <!-- Phase 2: Stats -->
+ <div class="win-stats-section" id="win-stats">
+  <div class="win-stats-divider"></div>
+  <div class="win-sec-lbl" id="win-sec-lbl">Your Stats</div>
   <div class="wgrid2">
    <div class="wcard"><div class="wc-lbl">Best Time</div><div class="wc-val" id="win-best">—</div><div class="wc-sub" id="win-best-sub"></div></div>
    <div class="wcard"><div class="wc-lbl">Avg Time</div><div class="wc-val" id="win-avg">—</div></div>
   </div>
-  <div class="win-sec-lbl" id="win-sec-lbl">Your Stats</div>
   <div class="win-counts">
    <div class="wcount-row">
     <div class="wcell"><div class="wc-lbl">Win Rate</div><div class="wc-val" id="win-wr">—</div></div>
@@ -607,10 +688,7 @@ body{
     <div class="wcell"><div class="wc-lbl">Finished</div><div class="wc-val" id="win-fin">—</div></div>
    </div>
   </div>
-  <div class="win-actions">
-   <button class="win-main" onclick="playAgain()">Play Again</button>
-   <button class="win-alt" onclick="goHome()">Change</button>
-  </div>
+  <button class="win-alt" onclick="goHome()">Change Difficulty</button>
  </div>
 </div>
 
@@ -767,9 +845,11 @@ function setup(res,diff,isDaily){
 // ── Render ───────────────────────────────────────────────────
 function gsz(){
   const W=window.innerWidth,H=window.innerHeight;
-  // Reserve space: nav~80, stats~52, actions~70, numpad~78, safe~28 = ~308
-  const maxH=H-308;
-  return Math.floor(Math.min(W-28,maxH,420)/9)*9; // snap to 9
+  // On desktop cap grid to 360px so it looks proportional, not stretched
+  const maxW = W < 600 ? W-28 : Math.min(W*0.45, 360);
+  // Reserve: nav~80, stats~52, actions~70, numpad~80, padding~28 = ~310
+  const maxH = H-310;
+  return Math.floor(Math.min(maxW, maxH, 360)/9)*9; // snap to multiple of 9
 }
 
 function render(){
@@ -816,11 +896,52 @@ function render(){
   });
 }
 
+// Cage tint palette — cycles through CSS vars
+const CAGE_TINTS=['--t0','--t1','--t2','--t3','--t4','--t5','--t6','--t7','--t8','--t9'];
+
 function renderSVG(sz,CS){
   const svg=document.getElementById('g-svg');svg.innerHTML='';
-  const p=1.5;
-  for(const cage of cages){
-    const cset=new Set(cage.cells.map(([r,c])=>r*9+c));const segs=[];
+  const cs=getComputedStyle(document.documentElement);
+  const lineClr=cs.getPropertyValue('--cage-line').trim();
+  const lblClr=cs.getPropertyValue('--cage-lbl').trim();
+
+  // Build adjacency: which cages touch each other
+  const adj=Array.from({length:cages.length},()=>new Set());
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const id=cageId[r][c];
+      [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([nr,nc])=>{
+        if(nr>=0&&nr<9&&nc>=0&&nc<9){
+          const nid=cageId[nr][nc];
+          if(nid!==id){adj[id].add(nid);adj[nid].add(id);}
+        }
+      });
+    }
+  }
+  // Greedy graph colouring — pick lowest colour not used by any neighbour
+  const cageColor=new Array(cages.length).fill(-1);
+  for(let i=0;i<cages.length;i++){
+    const usedByNeighbours=new Set([...adj[i]].map(n=>cageColor[n]).filter(c=>c>=0));
+    let col=0;
+    while(usedByNeighbours.has(col))col++;
+    cageColor[i]=col%CAGE_TINTS.length;
+  }
+
+  cages.forEach((cage,ci)=>{
+    const cset=new Set(cage.cells.map(([r,c])=>r*9+c));
+    const tint=cs.getPropertyValue(CAGE_TINTS[cageColor[ci]]).trim();
+
+    // 1. Tinted background rect for each cell in cage
+    for(const[r,c]of cage.cells){
+      const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x',c*CS+.5);rect.setAttribute('y',r*CS+.5);
+      rect.setAttribute('width',CS-1);rect.setAttribute('height',CS-1);
+      rect.setAttribute('fill',tint);
+      svg.appendChild(rect);
+    }
+
+    // 2. Solid hairline cage border (only sides that face outside cage)
+    const segs=[];const p=.5;
     for(const[r,c]of cage.cells){
       const x=c*CS,y=r*CS;
       if(r===0||!cset.has((r-1)*9+c))segs.push(`M${x+p},${y+p}L${x+CS-p},${y+p}`);
@@ -828,27 +949,28 @@ function renderSVG(sz,CS){
       if(r===8||!cset.has((r+1)*9+c))segs.push(`M${x+p},${y+CS-p}L${x+CS-p},${y+CS-p}`);
       if(c===0||!cset.has(r*9+c-1))segs.push(`M${x+p},${y+p}L${x+p},${y+CS-p}`);
     }
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',segs.join(' '));
-    path.setAttribute('stroke',getComputedStyle(document.documentElement).getPropertyValue('--cage-clr').trim());
-    path.setAttribute('stroke-width','1.2');
-    path.setAttribute('stroke-dasharray','3,2');
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke-linecap','round');
-    svg.appendChild(path);
+    if(segs.length){
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',segs.join(' '));
+      path.setAttribute('stroke',lineClr);
+      path.setAttribute('stroke-width','1');
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke-linecap','square');
+      svg.appendChild(path);
+    }
 
+    // 3. Cage sum in top-left cell
     const lc=cage.cells.reduce((m,[r,c])=>r<m[0]||(r===m[0]&&c<m[1])?[r,c]:m);
+    const fs=Math.max(6,Math.round(CS*.22));
     const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-    const fs=Math.max(6,Math.round(CS*.24));
-    txt.setAttribute('x',lc[1]*CS+2.5);
-    txt.setAttribute('y',lc[0]*CS+fs+1);
-    txt.setAttribute('font-size',fs);
-    txt.setAttribute('font-weight','600');
-    txt.setAttribute('fill',getComputedStyle(document.documentElement).getPropertyValue('--cage-lbl').trim());
+    txt.setAttribute('x',lc[1]*CS+3);txt.setAttribute('y',lc[0]*CS+fs+2);
+    txt.setAttribute('font-size',fs);txt.setAttribute('font-weight','700');
+    txt.setAttribute('fill',lblClr);
     txt.setAttribute('font-family','-apple-system,sans-serif');
+    txt.setAttribute('letter-spacing','-.2');
     txt.textContent=cage.sum;
     svg.appendChild(txt);
-  }
+  });
 }
 
 // ── Input ────────────────────────────────────────────────────
@@ -868,11 +990,22 @@ function inputNum(n){
       el.className='gs-val'+(mis>=3?' danger':mis>=2?' warn':'');
       saveState();
       render();
+      // Shake animation on wrong cell
+      requestAnimationFrame(()=>{
+        const cellEl=document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        if(cellEl){cellEl.classList.add('anim-err');setTimeout(()=>cellEl.classList.remove('anim-err'),350);}
+      });
       if(mis>=3){triggerGameOver();return;}
     }else{
       score+=Math.max(10,100-mis*20);
       document.getElementById('g-score').textContent=score;
       saveState();
+      render();
+      // Pop animation on correct entry
+      requestAnimationFrame(()=>{
+        const cellEl=document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        if(cellEl){cellEl.classList.add('anim-ok');setTimeout(()=>cellEl.classList.remove('anim-ok'),300);}
+      });
       checkWin();
     }
     return;
@@ -957,6 +1090,10 @@ async function checkWin(){
   document.getElementById('win-pct').textContent='…';
   document.getElementById('win-pct-lbl').textContent='Calculating percentile…';
   showScr('s-win');
+  // Scroll to top of win screen
+  document.getElementById('s-win').scrollTop=0;
+  // Launch confetti
+  launchConfetti();
 
   const rp=await recordSolve(cDiff,secs,mis);
   if(rp!==null){document.getElementById('win-pct').textContent=rp+'%';document.getElementById('win-pct').className='win-pct real';document.getElementById('win-pct-lbl').textContent=`Faster than ${rp}% of all players`;}
@@ -989,6 +1126,39 @@ document.getElementById('reg-uname').addEventListener('keydown',e=>{if(e.key==='
 document.getElementById('reg-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doReg();});
 document.getElementById('login-uname').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ── Confetti ─────────────────────────────────────────────────
+function launchConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const colors=['#30d158','#0a84ff','#ff9f0a','#ff453a','#bf5af2','#ffd60a','#64d2ff'];
+  const pieces=Array.from({length:90},()=>({
+    x:Math.random()*canvas.width,y:-10-Math.random()*canvas.height*.3,
+    r:3+Math.random()*4,c:colors[~~(Math.random()*colors.length)],
+    vx:(Math.random()-.5)*3,vy:2+Math.random()*4,
+    va:(Math.random()-.5)*.2,a:Math.random()*Math.PI*2,
+    life:1
+  }));
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    for(const p of pieces){
+      p.x+=p.vx;p.y+=p.vy;p.a+=p.va;p.vy+=.06;
+      p.life=Math.max(0,1-(p.y-canvas.height*.7)/(canvas.height*.3));
+      if(p.y<canvas.height+20){alive=true;}
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+      ctx.globalAlpha=Math.min(1,p.life);ctx.fillStyle=p.c;
+      ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+      ctx.restore();
+    }
+    frame++;
+    if(alive&&frame<240)requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
 
 // ── Init ─────────────────────────────────────────────────────
 loadLS();
