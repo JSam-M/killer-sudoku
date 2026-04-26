@@ -196,14 +196,10 @@ body{
   position:fixed;bottom:0;left:0;right:0;
   background:var(--bg1);
   border-top:.5px solid var(--sep);
-  display:flex;z-index:50;
+  display:none;z-index:50;
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-/* Hide tab bar on auth, game and win screens */
-#s-auth.active ~ .tab-bar,
-#s-game.active ~ .tab-bar,
-#s-win.active ~ .tab-bar,
-.tab-bar.hidden{display:none;}
+body.show-tabs .tab-bar{display:flex;}
 .tab-item{
   flex:1;display:flex;flex-direction:column;align-items:center;
   padding:10px 0 6px;cursor:pointer;gap:3px;
@@ -1526,10 +1522,9 @@ function launchConfetti(){
 
 // ── Tab bar ──────────────────────────────────────────────────
 function switchTab(tab){
-  // Update tab indicators
+  showTabBar();
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
-  // Show correct screen
   if(tab==='home'){
     document.getElementById('s-stats').classList.remove('active');
     document.getElementById('s-home').classList.add('active');
@@ -1540,12 +1535,8 @@ function switchTab(tab){
   }
 }
 
-function showTabBar(){
-  document.getElementById('tab-bar').classList.remove('hidden');
-}
-function hideTabBar(){
-  document.getElementById('tab-bar').classList.add('hidden');
-}
+function showTabBar(){document.body.classList.add('show-tabs');}
+function hideTabBar(){document.body.classList.remove('show-tabs');}
 
 // ── Stats page ────────────────────────────────────────────────
 const DIFFS_META=[
