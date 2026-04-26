@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Killer Sudoku">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="A premium Killer Sudoku puzzle game">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Killer Sudoku</title>
 <style>
 /* ─── Tokens ────────────────────────────────────────────── */
@@ -31,10 +35,10 @@
   --r-sm:     10px;
   /* grid */
   --grid-bg:  #161618;
-  --cell-sep: rgba(255,255,255,.08);
-  --box-sep:  rgba(255,255,255,.42);
-  --cage-line:rgba(255,255,255,.30);
-  --cage-lbl: rgba(255,255,255,.50);
+  --cell-sep: rgba(255,255,255,.07);
+  --box-sep:  rgba(255,255,255,.70);
+  --cage-line:rgba(255,255,255,.28);
+  --cage-lbl: rgba(255,255,255,.55);
   /* cage tints — maximally distinct, colorblind-safe hue wheel */
   --t0:rgba(255,80,80,.22);   /* red */
   --t1:rgba(255,165,0,.22);   /* orange */
@@ -54,8 +58,8 @@
     --sep:rgba(0,0,0,.11);--fill:rgba(0,0,0,.05);
     --accent:#34c759;--acc-fg:#fff;--red:#ff3b30;--orange:#ff9500;--blue:#007aff;
     --sel:rgba(52,199,89,.20);--sel2:rgba(52,199,89,.09);--hi:rgba(0,0,0,.04);
-    --grid-bg:#fff;--cell-sep:rgba(0,0,0,.07);--box-sep:rgba(0,0,0,.38);
-    --cage-line:rgba(0,0,0,.28);--cage-lbl:rgba(0,0,0,.42);
+    --grid-bg:#fff;--cell-sep:rgba(0,0,0,.06);--box-sep:rgba(0,0,0,.65);
+    --cage-line:rgba(0,0,0,.25);--cage-lbl:rgba(0,0,0,.50);
     --t0:rgba(220,50,50,.14);   /* red */
     --t1:rgba(220,130,0,.14);   /* orange */
     --t2:rgba(200,180,0,.13);   /* yellow */
@@ -182,9 +186,55 @@ body{
 
 .daily-row{
   background:var(--bg1);border-radius:var(--r);
-  margin:0 16px 32px;display:flex;align-items:center;
+  margin:0 16px 16px;display:flex;align-items:center;
   padding:14px 16px;cursor:pointer;gap:14px;
   transition:background .1s;
+}
+/* Streak banner */
+.streak-banner{
+  margin:0 16px 24px;
+  background:linear-gradient(135deg,rgba(255,159,10,.15),rgba(255,214,10,.10));
+  border:0.5px solid rgba(255,159,10,.30);
+  border-radius:var(--r);padding:14px 16px;
+  display:none;align-items:center;gap:14px;
+}
+.streak-banner.show{display:flex;}
+.streak-flame{font-size:32px;flex-shrink:0;}
+.streak-txt{flex:1;}
+.streak-count{font-size:17px;font-weight:600;color:var(--label);}
+.streak-sub{font-size:13px;color:var(--label2);margin-top:2px;}
+.streak-best{font-size:12px;color:rgba(255,159,10,.8);margin-top:2px;}
+/* Streak badge on win screen */
+.win-streak-badge{
+  display:none;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,rgba(255,159,10,.18),rgba(255,214,10,.12));
+  border:0.5px solid rgba(255,159,10,.35);
+  border-radius:var(--r-sm);padding:10px 16px;margin-bottom:8px;
+}
+.win-streak-badge.show{display:flex;}
+.win-streak-badge-ico{font-size:20px;}
+.win-streak-badge-txt{font-size:15px;font-weight:600;color:var(--label);}
+/* Install PWA banner */
+.pwa-banner{
+  position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+  left:16px;right:16px;z-index:100;
+  background:var(--bg1);border-radius:var(--r);
+  padding:14px 16px;display:none;align-items:center;gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.pwa-banner.show{display:flex;}
+.pwa-banner-ico{font-size:36px;flex-shrink:0;}
+.pwa-banner-txt{flex:1;}
+.pwa-banner-title{font-size:15px;font-weight:600;color:var(--label);}
+.pwa-banner-sub{font-size:12px;color:var(--label2);margin-top:2px;}
+.pwa-banner-btn{
+  padding:8px 14px;background:var(--accent);color:var(--acc-fg);
+  border:none;border-radius:8px;font-size:14px;font-weight:600;
+  cursor:pointer;flex-shrink:0;font-family:inherit;
+}
+.pwa-banner-close{
+  font-size:18px;color:var(--label3);cursor:pointer;
+  padding:4px;flex-shrink:0;background:none;border:none;
 }
 .daily-row:active{background:var(--fill);}
 .daily-ico{
@@ -260,7 +310,7 @@ body{
   border-radius:4px;overflow:hidden;touch-action:manipulation;
   background:var(--grid-bg);
   /* Outer border via outline — no layout effect */
-  outline:1.5px solid var(--box-sep);
+  outline:2.5px solid var(--box-sep);
   outline-offset:-1px;
 }
 .cell{
@@ -274,9 +324,9 @@ body{
   transition:background .07s;
 }
 /* Box dividers — thicker, clearly visible */
-.cell:nth-child(3n):not(:nth-child(9n)){border-right:1.5px solid var(--box-sep);}
+.cell:nth-child(3n):not(:nth-child(9n)){border-right:2.5px solid var(--box-sep);}
 .cell:nth-child(9n){border-right:none;}
-.cell[data-r="2"],.cell[data-r="5"]{border-bottom:1.5px solid var(--box-sep);}
+.cell[data-r="2"],.cell[data-r="5"]{border-bottom:2.5px solid var(--box-sep);}
 .cell[data-r="8"]{border-bottom:none;}
 /* States */
 .cell.sel{background:var(--sel)!important;}
@@ -577,6 +627,26 @@ body{
   </div>
   <div class="daily-chev">›</div>
  </div>
+ <!-- Streak banner -->
+ <div class="streak-banner" id="streak-banner">
+  <div class="streak-flame">🔥</div>
+  <div class="streak-txt">
+   <div class="streak-count" id="streak-count">3 day streak!</div>
+   <div class="streak-sub" id="streak-sub">Play today's daily to keep it going</div>
+   <div class="streak-best" id="streak-best"></div>
+  </div>
+ </div>
+</div>
+
+<!-- PWA install banner -->
+<div class="pwa-banner" id="pwa-banner">
+ <div class="pwa-banner-ico">♟</div>
+ <div class="pwa-banner-txt">
+  <div class="pwa-banner-title">Add to Home Screen</div>
+  <div class="pwa-banner-sub">Play offline, no browser needed</div>
+ </div>
+ <button class="pwa-banner-btn" onclick="triggerPWAInstall()">Install</button>
+ <button class="pwa-banner-close" onclick="dismissPWABanner()">✕</button>
 </div>
 
 <!-- ════ GAME ══════════════════════════════════════════ -->
@@ -658,6 +728,16 @@ body{
    <div class="win-pct-block">
     <span class="win-pct" id="win-pct">…</span>
     <div class="win-pct-lbl" id="win-pct-lbl">Calculating percentile…</div>
+   </div>
+   <!-- Streak badge — shown when daily completed -->
+   <div class="win-streak-badge" id="win-streak-badge">
+    <div class="win-streak-badge-ico">🔥</div>
+    <div class="win-streak-badge-txt" id="win-streak-txt">3 day streak!</div>
+   </div>
+   <!-- Streak badge -->
+   <div class="win-streak-badge" id="win-streak-badge">
+    <div class="win-streak-badge-ico">🔥</div>
+    <div class="win-streak-badge-txt" id="win-streak-txt">3 day streak!</div>
    </div>
    <div class="win-quick">
     <div class="win-q-item"><div class="win-q-lbl">Time</div><div class="win-q-val" id="win-time">—</div></div>
@@ -961,13 +1041,28 @@ function renderSVG(sz,CS){
 
     // 3. Cage sum in top-left cell
     const lc=cage.cells.reduce((m,[r,c])=>r<m[0]||(r===m[0]&&c<m[1])?[r,c]:m);
-    const fs=Math.max(6,Math.round(CS*.22));
+    // Cage sum — background pill + bold label for legibility
+    const fs=Math.max(7,Math.round(CS*.25));
+    const lx=lc[1]*CS+2, ly=lc[0]*CS+2;
+    const pillW=fs*1.55+2, pillH=fs+3;
+
+    // Pill background for contrast
+    const pill=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    pill.setAttribute('x',lx); pill.setAttribute('y',ly);
+    pill.setAttribute('width',pillW); pill.setAttribute('height',pillH);
+    pill.setAttribute('rx','2'); pill.setAttribute('ry','2');
+    pill.setAttribute('fill','rgba(0,0,0,.32)');
+    svg.appendChild(pill);
+
     const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('x',lc[1]*CS+3);txt.setAttribute('y',lc[0]*CS+fs+2);
-    txt.setAttribute('font-size',fs);txt.setAttribute('font-weight','700');
-    txt.setAttribute('fill',lblClr);
+    txt.setAttribute('x',lx+pillW/2);
+    txt.setAttribute('y',ly+pillH-3);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('font-size',fs);
+    txt.setAttribute('font-weight','700');
+    txt.setAttribute('fill','rgba(255,255,255,.90)');
     txt.setAttribute('font-family','-apple-system,sans-serif');
-    txt.setAttribute('letter-spacing','-.2');
+    txt.setAttribute('letter-spacing','-.3');
     txt.textContent=cage.sum;
     svg.appendChild(txt);
   });
@@ -1089,6 +1184,10 @@ async function checkWin(){
   document.getElementById('win-sec-lbl').textContent='Your '+(lbls[cDiff]||'') +' Stats';
   document.getElementById('win-pct').textContent='…';
   document.getElementById('win-pct-lbl').textContent='Calculating percentile…';
+  // Record streak if daily
+  let streakData=null;
+  if(lastDaily){streakData=recordDailyStreak();showWinStreakBadge(streakData);}
+  else{document.getElementById('win-streak-badge')?.classList.remove('show');}
   showScr('s-win');
   // Scroll to top of win screen
   document.getElementById('s-win').scrollTop=0;
@@ -1126,6 +1225,158 @@ document.getElementById('reg-uname').addEventListener('keydown',e=>{if(e.key==='
 document.getElementById('reg-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doReg();});
 document.getElementById('login-uname').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ── Streak tracking ─────────────────────────────────────────
+// Streak data: { current, best, lastDate }
+function getStreak(){
+  try{const d=localStorage.getItem('ks4_streak');return d?JSON.parse(d):{current:0,best:0,lastDate:''};}catch{return{current:0,best:0,lastDate:''};}
+}
+function saveStreak(s){try{localStorage.setItem('ks4_streak',JSON.stringify(s));}catch{}}
+
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function yesterdayStr(){
+  const d=new Date();d.setDate(d.getDate()-1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function recordDailyStreak(){
+  const s=getStreak();const today=todayStr();
+  if(s.lastDate===today) return s; // already counted today
+  if(s.lastDate===yesterdayStr()) s.current++;
+  else s.current=1; // streak broken or first time
+  s.best=Math.max(s.best,s.current);
+  s.lastDate=today;
+  saveStreak(s);
+  return s;
+}
+
+function updateStreakBanner(){
+  const s=getStreak();const today=todayStr();
+  const banner=document.getElementById('streak-banner');
+  if(!banner) return;
+  if(s.current<=0){banner.classList.remove('show');return;}
+  banner.classList.add('show');
+  const playedToday=s.lastDate===today;
+  document.getElementById('streak-count').textContent=
+    s.current===1?'1 day streak!':s.current+' day streak! 🔥';
+  document.getElementById('streak-sub').textContent=
+    playedToday?'Keep it up — come back tomorrow!':'Play today's daily to keep it going';
+  document.getElementById('streak-best').textContent=
+    s.best>1?'Personal best: '+s.best+' days':'';
+}
+
+function showWinStreakBadge(streak){
+  const badge=document.getElementById('win-streak-badge');
+  const txt=document.getElementById('win-streak-txt');
+  if(!badge||!txt) return;
+  if(streak.current>=2){
+    badge.classList.add('show');
+    txt.textContent=streak.current+' day streak! '+
+      (streak.current===streak.best&&streak.current>1?' (New best!)':'');
+  }
+}
+
+// ── PWA install ───────────────────────────────────────────────
+let _pwaPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();_pwaPrompt=e;
+  // Show install banner after 30s or after first win
+  setTimeout(()=>showPWABanner(),30000);
+});
+window.addEventListener('appinstalled',()=>{
+  hidePWABanner();_pwaPrompt=null;
+  localStorage.setItem('ks4_installed','1');
+});
+
+function showPWABanner(){
+  if(localStorage.getItem('ks4_installed')) return;
+  if(localStorage.getItem('ks4_pwa_dismissed')) return;
+  if(!_pwaPrompt) return; // already installed or not supported
+  document.getElementById('pwa-banner')?.classList.add('show');
+}
+function hidePWABanner(){
+  document.getElementById('pwa-banner')?.classList.remove('show');
+}
+function dismissPWABanner(){
+  hidePWABanner();
+  localStorage.setItem('ks4_pwa_dismissed','1');
+}
+async function triggerPWAInstall(){
+  if(!_pwaPrompt) return;
+  hidePWABanner();
+  await _pwaPrompt.prompt();
+  _pwaPrompt=null;
+}
+
+// Register service worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(()=>console.log('SW registered'))
+      .catch(e=>console.log('SW failed',e));
+  });
+}
+
+// ── Streak tracking ─────────────────────────────────────────
+function getStreak(){try{const d=localStorage.getItem('ks4_streak');return d?JSON.parse(d):{current:0,best:0,lastDate:''}}catch{return{current:0,best:0,lastDate:''}}}
+function saveStreak(s){try{localStorage.setItem('ks4_streak',JSON.stringify(s))}catch{}}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function yesterdayStr(){const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function recordDailyStreak(){
+  const s=getStreak();const today=todayStr();
+  if(s.lastDate===today) return s;
+  s.current=s.lastDate===yesterdayStr()?s.current+1:1;
+  s.best=Math.max(s.best,s.current);
+  s.lastDate=today;saveStreak(s);return s;
+}
+function updateStreakBanner(){
+  const s=getStreak();const today=todayStr();
+  const banner=document.getElementById('streak-banner');
+  if(!banner||s.current<=0){banner?.classList.remove('show');return;}
+  banner.classList.add('show');
+  const playedToday=s.lastDate===today;
+  document.getElementById('streak-count').textContent=s.current===1?'1 day streak!':s.current+' day streak! 🔥';
+  document.getElementById('streak-sub').textContent=playedToday?'Come back tomorrow to keep it going!':'Play today's daily to keep it going';
+  document.getElementById('streak-best').textContent=s.best>1?'Personal best: '+s.best+' days':'';
+}
+function showWinStreakBadge(s){
+  const badge=document.getElementById('win-streak-badge');
+  const txt=document.getElementById('win-streak-txt');
+  if(!badge||!txt||s.current<2) return;
+  badge.classList.add('show');
+  txt.textContent=s.current+' day streak!'+(s.current===s.best&&s.current>1?' 🏆 New best!':'');
+}
+
+// ── PWA ───────────────────────────────────────────────────────
+let _pwaPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();_pwaPrompt=e;
+  setTimeout(showPWABanner,20000);
+});
+window.addEventListener('appinstalled',()=>{
+  hidePWABanner();_pwaPrompt=null;
+  localStorage.setItem('ks4_installed','1');
+});
+function showPWABanner(){
+  if(localStorage.getItem('ks4_installed')) return;
+  if(localStorage.getItem('ks4_pwa_dismissed')) return;
+  if(!_pwaPrompt) return;
+  document.getElementById('pwa-banner')?.classList.add('show');
+}
+function hidePWABanner(){document.getElementById('pwa-banner')?.classList.remove('show');}
+function dismissPWABanner(){hidePWABanner();localStorage.setItem('ks4_pwa_dismissed','1');}
+async function triggerPWAInstall(){
+  if(!_pwaPrompt) return;
+  hidePWABanner();await _pwaPrompt.prompt();_pwaPrompt=null;
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
 
 // ── Confetti ─────────────────────────────────────────────────
 function launchConfetti(){
