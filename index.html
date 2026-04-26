@@ -194,22 +194,21 @@ body{
 /* ── Tab bar ── */
 .tab-bar{
   position:fixed;bottom:0;left:0;right:0;
-  background:rgba(28,28,30,.92);
-  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  background:var(--bg1);
   border-top:.5px solid var(--sep);
-  display:flex;z-index:50;
+  display:none;z-index:50;
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
+.tab-bar.visible{display:flex;}
 .tab-item{
   flex:1;display:flex;flex-direction:column;align-items:center;
   padding:10px 0 6px;cursor:pointer;gap:3px;
-  transition:opacity .15s;
+  color:var(--label3);transition:color .15s;
 }
 .tab-item:active{opacity:.6;}
-.tab-ico{font-size:22px;line-height:1;}
-.tab-lbl{font-size:10px;font-weight:500;color:var(--label3);letter-spacing:.2px;}
-.tab-item.active .tab-lbl{color:var(--accent);}
-.tab-item.active .tab-ico{filter:none;}
+.tab-svg{width:22px;height:22px;color:inherit;}
+.tab-lbl{font-size:10px;font-weight:500;color:inherit;letter-spacing:.2px;}
+.tab-item.active{color:var(--accent);}
 
 /* Screens that use tab bar need bottom padding */
 .has-tabs{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 56px);}
@@ -810,13 +809,20 @@ body{
 </div>
 
 <!-- ════ TAB BAR ════════════════════════════════════════ -->
-<div class="tab-bar" id="tab-bar" style="display:none;">
+<div class="tab-bar" id="tab-bar">
  <div class="tab-item active" id="tab-home" onclick="switchTab('home')">
-  <div class="tab-ico">♟</div>
+  <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+   <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
   <div class="tab-lbl">Play</div>
  </div>
  <div class="tab-item" id="tab-stats" onclick="switchTab('stats')">
-  <div class="tab-ico">📊</div>
+  <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+   <line x1="18" y1="20" x2="18" y2="10"/>
+   <line x1="12" y1="20" x2="12" y2="4"/>
+   <line x1="6" y1="20" x2="6" y2="14"/>
+  </svg>
   <div class="tab-lbl">Stats</div>
  </div>
 </div>
@@ -1013,7 +1019,13 @@ function skipAuth(){user=null;localStorage.removeItem('ks4_u');enterHome();}
 function doSignOut(){user=null;localStorage.removeItem('ks4_u');showScr('s-auth');}
 function showLogin(){document.getElementById('reg-section').style.display='none';document.getElementById('login-section').style.display='';setTimeout(()=>document.getElementById('login-uname').focus(),80);}
 function showReg(){document.getElementById('login-section').style.display='none';document.getElementById('reg-section').style.display='';}
-async function tryAutoLogin(){try{const s=localStorage.getItem('ks4_u');if(s){user=JSON.parse(s);await loadRemote();enterHome();return;}}catch(e){}showScr('s-auth');}
+async function tryAutoLogin(){
+  try{
+    const s=localStorage.getItem('ks4_u');
+    if(s){user=JSON.parse(s);await loadRemote();enterHome();return;}
+  }catch(e){}
+  showScr('s-auth');
+}
 
 // ── Navigation ───────────────────────────────────────────────
 function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
@@ -1524,10 +1536,10 @@ function switchTab(tab){
 }
 
 function showTabBar(){
-  document.getElementById('tab-bar').style.display='flex';
+  document.getElementById('tab-bar').classList.add('visible');
 }
 function hideTabBar(){
-  document.getElementById('tab-bar').style.display='none';
+  document.getElementById('tab-bar').classList.remove('visible');
 }
 
 // ── Stats page ────────────────────────────────────────────────
