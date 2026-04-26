@@ -190,6 +190,117 @@ body{
   padding:14px 16px;cursor:pointer;gap:14px;
   transition:background .1s;
 }
+
+/* ── Tab bar ── */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(28,28,30,.92);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border-top:.5px solid var(--sep);
+  display:flex;z-index:50;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 0 6px;cursor:pointer;gap:3px;
+  transition:opacity .15s;
+}
+.tab-item:active{opacity:.6;}
+.tab-ico{font-size:22px;line-height:1;}
+.tab-lbl{font-size:10px;font-weight:500;color:var(--label3);letter-spacing:.2px;}
+.tab-item.active .tab-lbl{color:var(--accent);}
+.tab-item.active .tab-ico{filter:none;}
+
+/* Screens that use tab bar need bottom padding */
+.has-tabs{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 56px);}
+
+/* ── Stats screen ── */
+#s-stats{background:var(--bg);overflow-y:auto;}
+.stats-page-nav{
+  display:flex;align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top,0px) + 52px) 20px 0;
+  position:relative;
+}
+.stats-page-title{font-size:17px;font-weight:600;color:var(--label);}
+
+.stats-hero{
+  display:flex;align-items:center;gap:14px;
+  background:var(--bg1);border-radius:var(--r);
+  margin:20px 16px 8px;padding:16px;
+}
+.stats-hero-av{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--accent);color:var(--acc-fg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;flex-shrink:0;
+}
+.stats-hero-name{font-size:20px;font-weight:700;color:var(--label);}
+.stats-hero-sub{font-size:13px;color:var(--label2);margin-top:3px;}
+
+/* Streak card on stats page */
+.stats-streak-card{
+  background:linear-gradient(135deg,rgba(255,159,10,.15),rgba(255,214,10,.08));
+  border:.5px solid rgba(255,159,10,.28);
+  border-radius:var(--r);margin:0 16px 8px;
+  padding:16px;display:flex;align-items:center;gap:14px;
+}
+.stats-streak-ico{font-size:36px;}
+.stats-streak-num{font-size:28px;font-weight:700;color:var(--label);}
+.stats-streak-lbl{font-size:13px;color:var(--label2);margin-top:2px;}
+.stats-streak-best{font-size:12px;color:rgba(255,159,10,.9);margin-top:2px;}
+
+/* Section headers */
+.stats-sec-hdr{
+  font-size:13px;font-weight:500;color:var(--label2);
+  padding:16px 20px 6px;letter-spacing:.1px;
+}
+
+/* Per-difficulty stat cards */
+.diff-stat-group{margin:0 16px 8px;}
+.diff-stat-row{
+  background:var(--bg1);border-radius:var(--r);
+  overflow:hidden;margin-bottom:8px;
+}
+.diff-stat-header{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:.5px solid var(--sep);
+  cursor:pointer;
+}
+.diff-stat-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.diff-stat-name{font-size:16px;font-weight:600;color:var(--label);flex:1;}
+.diff-stat-summary{font-size:13px;color:var(--label2);}
+.diff-stat-body{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+}
+.diff-stat-cell{
+  padding:10px 8px;text-align:center;
+  border-left:.5px solid var(--sep);
+}
+.diff-stat-cell:first-child{border-left:none;}
+.diff-stat-cell-lbl{font-size:10px;font-weight:500;color:var(--label3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+.diff-stat-cell-val{font-size:16px;font-weight:600;color:var(--label);font-variant-numeric:tabular-nums;}
+.diff-stat-cell-val.accent{color:var(--accent);}
+
+/* Overall totals card */
+.totals-card{
+  background:var(--bg1);border-radius:var(--r);
+  margin:0 16px 8px;overflow:hidden;
+}
+.totals-row{
+  display:flex;border-top:.5px solid var(--sep);
+}
+.totals-row:first-child{border-top:none;}
+.totals-cell{flex:1;padding:12px 8px;text-align:center;border-left:.5px solid var(--sep);}
+.totals-cell:first-child{border-left:none;}
+
+/* Reset button */
+.stats-reset-btn{
+  margin:8px 16px 24px;width:calc(100% - 32px);
+  padding:14px;background:transparent;
+  border:.5px solid var(--sep);border-radius:var(--r);
+  color:var(--red);font-size:15px;font-weight:500;
+  cursor:pointer;font-family:inherit;
+}
 /* Streak banner */
 .streak-banner{
   margin:0 16px 24px;
@@ -573,7 +684,7 @@ body{
 </div>
 
 <!-- ════ HOME ══════════════════════════════════════════ -->
-<div id="s-home" class="scr">
+<div id="s-home" class="scr has-tabs">
  <div class="home-top">
   <div class="home-user">
    <div class="home-av" id="home-av">?</div>
@@ -647,6 +758,67 @@ body{
  </div>
  <button class="pwa-banner-btn" onclick="triggerPWAInstall()">Install</button>
  <button class="pwa-banner-close" onclick="dismissPWABanner()">✕</button>
+</div>
+
+<!-- ════ STATS ═════════════════════════════════════════ -->
+<div id="s-stats" class="scr has-tabs">
+ <div class="stats-page-nav">
+  <div class="stats-page-title">Statistics</div>
+ </div>
+
+ <!-- Profile hero -->
+ <div class="stats-hero">
+  <div class="stats-hero-av" id="stats-av">?</div>
+  <div>
+   <div class="stats-hero-name" id="stats-name">Guest</div>
+   <div class="stats-hero-sub" id="stats-member">Playing as guest</div>
+  </div>
+ </div>
+
+ <!-- Streak -->
+ <div class="stats-streak-card" id="stats-streak-card" style="display:none;">
+  <div class="stats-streak-ico">🔥</div>
+  <div>
+   <div class="stats-streak-num" id="stats-streak-num">0</div>
+   <div class="stats-streak-lbl">day streak</div>
+   <div class="stats-streak-best" id="stats-streak-best"></div>
+  </div>
+ </div>
+
+ <!-- Overall totals -->
+ <div class="stats-sec-hdr">Overall</div>
+ <div class="totals-card">
+  <div class="totals-row">
+   <div class="totals-cell"><div class="diff-stat-cell-lbl">Games Started</div><div class="diff-stat-cell-val" id="tot-started">0</div></div>
+   <div class="totals-cell"><div class="diff-stat-cell-lbl">Games Won</div><div class="diff-stat-cell-val accent" id="tot-finished">0</div></div>
+   <div class="totals-cell"><div class="diff-stat-cell-lbl">Win Rate</div><div class="diff-stat-cell-val" id="tot-wr">—</div></div>
+  </div>
+  <div class="totals-row">
+   <div class="totals-cell"><div class="diff-stat-cell-lbl">Clean Wins</div><div class="diff-stat-cell-val" id="tot-clean">0</div></div>
+   <div class="totals-cell"><div class="diff-stat-cell-lbl">Time Played</div><div class="diff-stat-cell-val" id="tot-time">0h</div></div>
+   <div class="totals-cell"><div class="diff-stat-cell-lbl">Best Streak</div><div class="diff-stat-cell-val" id="tot-streak">0</div></div>
+  </div>
+ </div>
+
+ <!-- Per-difficulty breakdown -->
+ <div class="stats-sec-hdr">By Difficulty</div>
+ <div class="diff-stat-group" id="diff-stat-group">
+  <!-- Injected by JS -->
+ </div>
+
+ <button class="stats-reset-btn" onclick="confirmResetStats()">Reset All Stats</button>
+</div>
+
+<!-- ════ TAB BAR ════════════════════════════════════════ -->
+<div class="tab-bar" id="tab-bar" style="display:none;">
+ <div class="tab-item active" id="tab-home" onclick="switchTab('home')">
+  <div class="tab-ico">♟</div>
+  <div class="tab-lbl">Play</div>
+ </div>
+ <div class="tab-item" id="tab-stats" onclick="switchTab('stats')">
+  <div class="tab-ico">📊</div>
+  <div class="tab-lbl">Stats</div>
+ </div>
 </div>
 
 <!-- ════ GAME ══════════════════════════════════════════ -->
@@ -846,7 +1018,7 @@ async function tryAutoLogin(){try{const s=localStorage.getItem('ks4_u');if(s){us
 // ── Navigation ───────────────────────────────────────────────
 function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function enterHome(){loadLS();document.getElementById('home-name').textContent=user?user.username:'Guest';document.getElementById('home-av').textContent=user?user.username[0].toUpperCase():'?';const d=new Date();document.getElementById('daily-date').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});showScr('s-home');}
-function goHome(){clearInterval(tInt);tInt=null;paused=false;gameOver=false;document.getElementById('g-ov').classList.remove('show');showScr('s-home');}
+function goHome(){clearInterval(tInt);tInt=null;paused=false;gameOver=false;document.getElementById('g-ov').classList.remove('show');enterHome();}
 
 // ── Backend ──────────────────────────────────────────────────
 async function testBackend(){try{const r=await fetch(`${SB_URL}/rest/v1/solve_times?select=id&limit=1`,{headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});connected=r.ok||r.status===406;}catch(e){}}
@@ -876,6 +1048,7 @@ function startDailyGame(){cDiff='medium';lastDaily=true;const d=new Date();launc
 function playAgain(){lastDaily?startDailyGame():startGame(cDiff);}
 
 function launch(diff,seed,isDaily){
+  hideTabBar();
   showScr('s-game');
   setGameVisible(false);
   document.getElementById('gen-wrap').style.display='flex';
@@ -1188,6 +1361,7 @@ async function checkWin(){
   let streakData=null;
   if(lastDaily){streakData=recordDailyStreak();showWinStreakBadge(streakData);}
   else{document.getElementById('win-streak-badge')?.classList.remove('show');}
+  hideTabBar();
   showScr('s-win');
   // Scroll to top of win screen
   document.getElementById('s-win').scrollTop=0;
@@ -1319,6 +1493,123 @@ function launchConfetti(){
     else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
   draw();
+}
+
+// ── Tab bar ──────────────────────────────────────────────────
+function switchTab(tab){
+  // Update tab indicators
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  // Show correct screen
+  if(tab==='home'){
+    document.getElementById('s-stats').classList.remove('active');
+    document.getElementById('s-home').classList.add('active');
+  } else {
+    document.getElementById('s-home').classList.remove('active');
+    document.getElementById('s-stats').classList.add('active');
+    renderStatsPage();
+  }
+}
+
+function showTabBar(){
+  document.getElementById('tab-bar').style.display='flex';
+}
+function hideTabBar(){
+  document.getElementById('tab-bar').style.display='none';
+}
+
+// ── Stats page ────────────────────────────────────────────────
+const DIFFS_META=[
+  {key:'easy',   label:'Easy',   pip:'#30d158'},
+  {key:'medium', label:'Medium', pip:'#ffd60a'},
+  {key:'hard',   label:'Hard',   pip:'#ff9f0a'},
+  {key:'expert', label:'Expert', pip:'#ff6b35'},
+  {key:'extreme',label:'Extreme',pip:'#ff453a'},
+  {key:'daily',  label:'Daily',  pip:'#0a84ff'},
+];
+
+function renderStatsPage(){
+  // Profile
+  document.getElementById('stats-av').textContent=user?user.username[0].toUpperCase():'?';
+  document.getElementById('stats-name').textContent=user?user.username:'Guest';
+  document.getElementById('stats-member').textContent=user?'Signed in · stats synced':'Playing as guest · stats on this device';
+
+  // Streak
+  const streak=getStreak();
+  const sc=document.getElementById('stats-streak-card');
+  if(streak.current>0){
+    sc.style.display='flex';
+    document.getElementById('stats-streak-num').textContent=streak.current;
+    document.getElementById('stats-streak-best').textContent=streak.best>1?'Best: '+streak.best+' days':'';
+  } else {
+    sc.style.display='none';
+  }
+
+  // Totals
+  let totStarted=0,totFinished=0,totClean=0,totSecs=0;
+  for(const k of Object.keys(pStats)){
+    const d=pStats[k];
+    totStarted+=d.started;totFinished+=d.finished;
+    totClean+=d.noMistakes;totSecs+=d.totalSecs;
+  }
+  document.getElementById('tot-started').textContent=totStarted;
+  document.getElementById('tot-finished').textContent=totFinished;
+  document.getElementById('tot-wr').textContent=totStarted>0?Math.round(totFinished/totStarted*100)+'%':'—';
+  document.getElementById('tot-clean').textContent=totClean;
+  // Format total time
+  const totalMins=Math.floor(totSecs/60);
+  const totalHrs=Math.floor(totalMins/60);
+  document.getElementById('tot-time').textContent=totalHrs>0?totalHrs+'h '+(totalMins%60)+'m':totalMins+'m';
+  document.getElementById('tot-streak').textContent=streak.best||0;
+
+  // Per-difficulty cards
+  const group=document.getElementById('diff-stat-group');
+  group.innerHTML='';
+  for(const meta of DIFFS_META){
+    const d=pStats[meta.key]||{started:0,finished:0,noMistakes:0,totalSecs:0,bestSecs:0};
+    if(d.started===0) continue; // hide diffs never played
+    const avgSecs=d.finished>0?Math.round(d.totalSecs/d.finished):0;
+    const wr=d.started>0?Math.round(d.finished/d.started*100):0;
+    const row=document.createElement('div');
+    row.className='diff-stat-row';
+    row.innerHTML=`
+      <div class="diff-stat-header">
+        <div class="diff-stat-pip" style="background:${meta.pip};"></div>
+        <div class="diff-stat-name">${meta.label}</div>
+        <div class="diff-stat-summary">${d.finished} won · ${wr}% win rate</div>
+      </div>
+      <div class="diff-stat-body">
+        <div class="diff-stat-cell">
+          <div class="diff-stat-cell-lbl">Best Time</div>
+          <div class="diff-stat-cell-val accent">${d.bestSecs>0?fmtT(d.bestSecs):'—'}</div>
+        </div>
+        <div class="diff-stat-cell">
+          <div class="diff-stat-cell-lbl">Avg Time</div>
+          <div class="diff-stat-cell-val">${avgSecs>0?fmtT(avgSecs):'—'}</div>
+        </div>
+        <div class="diff-stat-cell">
+          <div class="diff-stat-cell-lbl">Clean Wins</div>
+          <div class="diff-stat-cell-val">${d.noMistakes}</div>
+        </div>
+      </div>`;
+    group.appendChild(row);
+  }
+  if(group.innerHTML===''){
+    group.innerHTML='<div style="text-align:center;color:var(--label3);padding:24px;font-size:15px;">Play some games to see your stats here!</div>';
+  }
+}
+
+function fmtT(s){return String(~~(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+
+function saveLocalStats(){saveLS();}
+function confirmResetStats(){
+  if(confirm('Reset all your stats? This cannot be undone.')){
+    const ds=()=>({started:0,finished:0,noMistakes:0,totalSecs:0,bestSecs:0});
+    for(const k of Object.keys(pStats)) pStats[k]=ds();
+    saveLocalStats();
+    localStorage.removeItem('ks4_streak');
+    renderStatsPage();
+  }
 }
 
 // ── Init ─────────────────────────────────────────────────────
