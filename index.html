@@ -1226,121 +1226,29 @@ document.getElementById('reg-pass').addEventListener('keydown',e=>{if(e.key==='E
 document.getElementById('login-uname').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// ── Streak tracking ─────────────────────────────────────────
-// Streak data: { current, best, lastDate }
-function getStreak(){
-  try{const d=localStorage.getItem('ks4_streak');return d?JSON.parse(d):{current:0,best:0,lastDate:''};}catch{return{current:0,best:0,lastDate:''};}
-}
+// ── Streak tracking ──────────────────────────────────────────
+function getStreak(){try{const d=localStorage.getItem('ks4_streak');return d?JSON.parse(d):{current:0,best:0,lastDate:''};}catch{return{current:0,best:0,lastDate:''};}}
 function saveStreak(s){try{localStorage.setItem('ks4_streak',JSON.stringify(s));}catch{}}
-
-function todayStr(){
-  const d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function yesterdayStr(){
-  const d=new Date();d.setDate(d.getDate()-1);
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-
-function recordDailyStreak(){
-  const s=getStreak();const today=todayStr();
-  if(s.lastDate===today) return s; // already counted today
-  if(s.lastDate===yesterdayStr()) s.current++;
-  else s.current=1; // streak broken or first time
-  s.best=Math.max(s.best,s.current);
-  s.lastDate=today;
-  saveStreak(s);
-  return s;
-}
-
-function updateStreakBanner(){
-  const s=getStreak();const today=todayStr();
-  const banner=document.getElementById('streak-banner');
-  if(!banner) return;
-  if(s.current<=0){banner.classList.remove('show');return;}
-  banner.classList.add('show');
-  const playedToday=s.lastDate===today;
-  document.getElementById('streak-count').textContent=
-    s.current===1?'1 day streak!':s.current+' day streak! 🔥';
-  document.getElementById('streak-sub').textContent=
-    playedToday?'Keep it up — come back tomorrow!':'Play today's daily to keep it going';
-  document.getElementById('streak-best').textContent=
-    s.best>1?'Personal best: '+s.best+' days':'';
-}
-
-function showWinStreakBadge(streak){
-  const badge=document.getElementById('win-streak-badge');
-  const txt=document.getElementById('win-streak-txt');
-  if(!badge||!txt) return;
-  if(streak.current>=2){
-    badge.classList.add('show');
-    txt.textContent=streak.current+' day streak! '+
-      (streak.current===streak.best&&streak.current>1?' (New best!)':'');
-  }
-}
-
-// ── PWA install ───────────────────────────────────────────────
-let _pwaPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();_pwaPrompt=e;
-  // Show install banner after 30s or after first win
-  setTimeout(()=>showPWABanner(),30000);
-});
-window.addEventListener('appinstalled',()=>{
-  hidePWABanner();_pwaPrompt=null;
-  localStorage.setItem('ks4_installed','1');
-});
-
-function showPWABanner(){
-  if(localStorage.getItem('ks4_installed')) return;
-  if(localStorage.getItem('ks4_pwa_dismissed')) return;
-  if(!_pwaPrompt) return; // already installed or not supported
-  document.getElementById('pwa-banner')?.classList.add('show');
-}
-function hidePWABanner(){
-  document.getElementById('pwa-banner')?.classList.remove('show');
-}
-function dismissPWABanner(){
-  hidePWABanner();
-  localStorage.setItem('ks4_pwa_dismissed','1');
-}
-async function triggerPWAInstall(){
-  if(!_pwaPrompt) return;
-  hidePWABanner();
-  await _pwaPrompt.prompt();
-  _pwaPrompt=null;
-}
-
-// Register service worker
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js')
-      .then(()=>console.log('SW registered'))
-      .catch(e=>console.log('SW failed',e));
-  });
-}
-
-// ── Streak tracking ─────────────────────────────────────────
-function getStreak(){try{const d=localStorage.getItem('ks4_streak');return d?JSON.parse(d):{current:0,best:0,lastDate:''}}catch{return{current:0,best:0,lastDate:''}}}
-function saveStreak(s){try{localStorage.setItem('ks4_streak',JSON.stringify(s))}catch{}}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function yesterdayStr(){const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function recordDailyStreak(){
-  const s=getStreak();const today=todayStr();
+  const s=getStreak(),today=todayStr();
   if(s.lastDate===today) return s;
   s.current=s.lastDate===yesterdayStr()?s.current+1:1;
   s.best=Math.max(s.best,s.current);
   s.lastDate=today;saveStreak(s);return s;
 }
 function updateStreakBanner(){
-  const s=getStreak();const today=todayStr();
+  const s=getStreak(),today=todayStr();
   const banner=document.getElementById('streak-banner');
-  if(!banner||s.current<=0){banner?.classList.remove('show');return;}
+  if(!banner){return;}
+  if(s.current<=0){banner.classList.remove('show');return;}
   banner.classList.add('show');
   const playedToday=s.lastDate===today;
   document.getElementById('streak-count').textContent=s.current===1?'1 day streak!':s.current+' day streak! 🔥';
   document.getElementById('streak-sub').textContent=playedToday?'Come back tomorrow to keep it going!':'Play today's daily to keep it going';
-  document.getElementById('streak-best').textContent=s.best>1?'Personal best: '+s.best+' days':'';
+  const bestEl=document.getElementById('streak-best');
+  if(bestEl) bestEl.textContent=s.best>1?'Personal best: '+s.best+' days':'';
 }
 function showWinStreakBadge(s){
   const badge=document.getElementById('win-streak-badge');
@@ -1370,7 +1278,9 @@ function hidePWABanner(){document.getElementById('pwa-banner')?.classList.remove
 function dismissPWABanner(){hidePWABanner();localStorage.setItem('ks4_pwa_dismissed','1');}
 async function triggerPWAInstall(){
   if(!_pwaPrompt) return;
-  hidePWABanner();await _pwaPrompt.prompt();_pwaPrompt=null;
+  hidePWABanner();
+  await _pwaPrompt.prompt();
+  _pwaPrompt=null;
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
